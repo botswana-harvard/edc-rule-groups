@@ -1,0 +1,211 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Building Model Rules &mdash; bhp_entry_rules 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="bhp_entry_rules 1.0 documentation" href="index.html" />
+    <link rel="next" title="Classes" href="classes.html" />
+    <link rel="prev" title="Rule Groups" href="rule_groups.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rule_groups.html" title="Rule Groups"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">bhp_entry_rules 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="building-model-rules">
+<h1>Building Model Rules<a class="headerlink" href="#building-model-rules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="rules-are-attributes-of-a-rulegroup">
+<h2>Rules are attributes of a RuleGroup<a class="headerlink" href="#rules-are-attributes-of-a-rulegroup" title="Permalink to this headline">¶</a></h2>
+<p>The rules are added as attributes to a subclass of <tt class="xref py py-class docutils literal"><span class="pre">RuleGroup</span></tt> like this:</p>
+<div class="highlight-python"><pre>class HivHistoryRuleGroup(RuleGroup):
+
+    rule = ....
+
+    rule = ....
+
+    class Meta:
+        app_label = ....
+        filter_model = ....
+        source_model = ...</pre>
+</div>
+</div>
+<div class="section" id="rulegroups-are-declared-in-a-module-or-rule-groups-py">
+<h2>RuleGroups are declared in a module or <tt class="file docutils literal"><span class="pre">rule_groups.py</span></tt><a class="headerlink" href="#rulegroups-are-declared-in-a-module-or-rule-groups-py" title="Permalink to this headline">¶</a></h2>
+<p>RuleGroups are declared in <tt class="file docutils literal"><span class="pre">rule_groups.py</span></tt>. Place the file in the root of your app.</p>
+</div>
+<div class="section" id="by-default-rules-evaluate-when-the-dashboard-is-refreshed">
+<h2>By Default, Rules Evaluate When the Dashboard is refreshed<a class="headerlink" href="#by-default-rules-evaluate-when-the-dashboard-is-refreshed" title="Permalink to this headline">¶</a></h2>
+<p>The rules in a class evaluate when the dashboard is refreshed.</p>
+</div>
+<div class="section" id="rules-evaluate-in-order">
+<h2>Rules Evaluate in Order<a class="headerlink" href="#rules-evaluate-in-order" title="Permalink to this headline">¶</a></h2>
+<p>Rules evaluate in the order in which they appear in the <tt class="file docutils literal"><span class="pre">rule_groups.py</span></tt>.
+Design and order your rules knowing
+that the action of a rule can be undone by that of a rule that follows later in the file.</p>
+</div>
+<div class="section" id="rules-can-access-fields-in-registeredsubject">
+<h2>Rules can access fields in RegisteredSubject<a class="headerlink" href="#rules-can-access-fields-in-registeredsubject" title="Permalink to this headline">¶</a></h2>
+<p>If a predicate refers to a field name that appears in RegisteredSubject, it will be
+evaluated using the RegisteredSubject model and not the source model. Default field names are not included,
+such as, id, hostname_created, modified, user_created, etc.</p>
+<dl class="docutils">
+<dt>In the example below,</dt>
+<dd><ul class="first last simple">
+<li>the rule is built with <tt class="xref py py-class docutils literal"><span class="pre">AdditionalDataRule</span></tt> which when evalutated as &#8216;required&#8217; will
+add a required form to the dashboard visible at any visit (PRN form).</li>
+<li>the field &#8216;sid&#8217; will be evaluated against an instance of RegisteredSubject for this infant;</li>
+<li>the predicate has two tuples which evaluate to a predicate with two logic
+phrases joined by &#8216;and&#8217;;</li>
+<li>the second tuple compares &#8216;sid&#8217; to None</li>
+<li>the second tuple has 4 items, where the last item is the logic operator for the two
+phrases in the evaluated predicate.</li>
+</ul>
+</dd>
+</dl>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">InfantPrerandoLossRuleGroup</span><span class="p">(</span><span class="n">RuleGroup</span><span class="p">):</span>
+
+    <span class="n">lost</span> <span class="o">=</span> <span class="n">AdditionalDataRule</span><span class="p">(</span>
+        <span class="n">logic</span><span class="o">=</span><span class="n">Logic</span><span class="p">(</span>
+            <span class="n">predicate</span><span class="o">=</span><span class="p">((</span><span class="s">&#39;reason&#39;</span><span class="p">,</span> <span class="s">&#39;equals&#39;</span><span class="p">,</span> <span class="s">&#39;lost&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;sid&#39;</span><span class="p">,</span> <span class="s">&#39;equals&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;and&#39;</span><span class="p">)),</span>
+            <span class="n">consequence</span><span class="o">=</span><span class="s">&#39;required&#39;</span><span class="p">,</span>
+            <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;not_required&#39;</span><span class="p">),</span>
+        <span class="n">target_model</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;infantprerandoloss&#39;</span><span class="p">,</span> <span class="s">&#39;infantoffstudy&#39;</span><span class="p">])</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;mpepu_infant&#39;</span>
+        <span class="n">source_model</span> <span class="o">=</span> <span class="n">InfantVisit</span>
+        <span class="n">filter_model</span> <span class="o">=</span> <span class="p">(</span><span class="n">RegisteredSubject</span><span class="p">,</span> <span class="s">&#39;registered_subject&#39;</span><span class="p">)</span>
+<span class="n">rule_groups</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">InfantPrerandoLossRuleGroup</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">InfantPrerandoLossOffDrugRuleGroup</span><span class="p">(</span><span class="n">RuleGroup</span><span class="p">):</span>
+
+    <span class="n">lost_off_drug</span> <span class="o">=</span> <span class="n">AdditionalDataRule</span><span class="p">(</span>
+        <span class="n">logic</span><span class="o">=</span><span class="n">Logic</span><span class="p">(</span>
+            <span class="n">predicate</span><span class="o">=</span><span class="p">((</span><span class="s">&#39;reason&#39;</span><span class="p">,</span> <span class="s">&#39;equals&#39;</span><span class="p">,</span> <span class="s">&#39;lost&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;sid&#39;</span><span class="p">,</span> <span class="s">&#39;ne&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">&#39;and&#39;</span><span class="p">)),</span>
+            <span class="n">consequence</span><span class="o">=</span><span class="s">&#39;required&#39;</span><span class="p">,</span>
+            <span class="n">alternative</span><span class="o">=</span><span class="s">&#39;not_required&#39;</span><span class="p">),</span>
+        <span class="n">target_model</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;infantoffdrug&#39;</span><span class="p">,</span> <span class="s">&#39;infantoffstudy&#39;</span><span class="p">])</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">app_label</span> <span class="o">=</span> <span class="s">&#39;mpepu_infant&#39;</span>
+        <span class="n">source_model</span> <span class="o">=</span> <span class="n">InfantVisit</span>
+        <span class="n">filter_model</span> <span class="o">=</span> <span class="p">(</span><span class="n">RegisteredSubject</span><span class="p">,</span> <span class="s">&#39;registered_subject&#39;</span><span class="p">)</span>
+<span class="n">rule_groups</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">InfantPrerandoLossOffDrugRuleGroup</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Building Model Rules</a><ul>
+<li><a class="reference internal" href="#rules-are-attributes-of-a-rulegroup">Rules are attributes of a RuleGroup</a></li>
+<li><a class="reference internal" href="#rulegroups-are-declared-in-a-module-or-rule-groups-py">RuleGroups are declared in a module or <tt class="file docutils literal"><span class="pre">rule_groups.py</span></tt></a></li>
+<li><a class="reference internal" href="#by-default-rules-evaluate-when-the-dashboard-is-refreshed">By Default, Rules Evaluate When the Dashboard is refreshed</a></li>
+<li><a class="reference internal" href="#rules-evaluate-in-order">Rules Evaluate in Order</a></li>
+<li><a class="reference internal" href="#rules-can-access-fields-in-registeredsubject">Rules can access fields in RegisteredSubject</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rule_groups.html"
+                        title="previous chapter">Rule Groups</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="classes.html"
+                        title="next chapter">Classes</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/rules.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="classes.html" title="Classes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rule_groups.html" title="Rule Groups"
+             >previous</a> |</li>
+        <li><a href="index.html">bhp_entry_rules 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, erik van widenfelt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

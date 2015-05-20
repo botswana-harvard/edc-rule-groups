@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>bhp_bucket.classes.model_rule &mdash; bhp_entry_rules 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="bhp_entry_rules 1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="bhp_bucket.classes" href="../classes.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">bhp_entry_rules 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../classes.html" accesskey="U">bhp_bucket.classes</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for bhp_bucket.classes.model_rule</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="kn">import</span> <span class="n">get_model</span>
+<span class="c">#from bhp_bucket.models import RuleHistory</span>
+
+<div class="viewcode-block" id="ModelRule"><a class="viewcode-back" href="../../../classes.html#bhp_bucket.classes.model_rule.ModelRule">[docs]</a><span class="k">class</span> <span class="nc">ModelRule</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">         IF (predicate) </span>
+<span class="sd">         THEN </span>
+<span class="sd">            (consequent)</span>
+<span class="sd">         ELSE</span>
+<span class="sd">            (alternative)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_APP_LABEL</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_MODEL_NAME</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PREDICATE</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_models</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c"># target_model should be a list. So you may send more</span>
+        <span class="c"># than one tuple (app_label, model name) for the rule to be</span>
+        <span class="c"># run against, (or a list of model names as long as</span>
+        <span class="c"># the Meta.app_label is set)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_target_models</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;target_model&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_target_models</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Attribute target_model must be a list&#39;</span><span class="p">)</span>
+        
+        <span class="c"># you may pass a reference_instance. The default is None which means </span>
+        <span class="c"># use the instance of model from the bucket.py class, </span>
+        <span class="c"># but you may wish to reference a value that is not in the </span>
+        <span class="c"># default model. </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_reference_model</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;reference_model&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;reference_model_filter&#39;</span><span class="p">)</span>
+        
+        <span class="c"># name of model attribute of the visit model. will be used with</span>
+        <span class="c"># get model to get the current visit model instance</span>
+        <span class="c"># needed for the entry bucket</span>
+        <span class="c">#self.visit_model_fieldname = kwargs.get(&#39;visit_model_fieldname&#39;)</span>
+        
+        <span class="c"># logic tuple</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logic</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;logic&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logic</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;Attribute logic must be a tuple&#39;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_predicate</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+                
+        <span class="k">if</span> <span class="ow">not</span> <span class="s">&#39;Meta&#39;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;class Meta with the app_label attribute has not been defined. Do so in the bucket.py&#39;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="ModelRule.run"><a class="viewcode-back" href="../../../classes.html#bhp_bucket.classes.model_rule.ModelRule.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">meta</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot; Run the rule. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_reference_model</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">app_label</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">visit_model</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_build_predicate</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_target_model</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">app_label</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predicate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;self._predicate should be set in the child object. cannot be None, See method run() of </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,))</span>   
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_target_models</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;self._target_models should be set in the child object. cannot be None, See method run() of </span><span class="si">%s</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">,))</span>   
+        
+</div>
+    <span class="k">def</span> <span class="nf">_set_target_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">app_label</span><span class="p">):</span>
+    
+        <span class="sd">&quot;&quot;&quot; Set the target model for this rule. &quot;&quot;&quot;</span>
+    
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_models</span> <span class="o">=</span> <span class="p">[]</span>    
+        
+        <span class="c"># for each target model tuple, get the actual model</span>
+        <span class="c"># and append to the internal list of target models to run against</span>
+        <span class="k">for</span> <span class="n">target_model</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_target_models</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target_model</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_target_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_model</span><span class="p">(</span><span class="n">target_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_APP_LABEL</span><span class="p">],</span> <span class="n">target_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_MODEL_NAME</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_target_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_model</span><span class="p">(</span><span class="n">app_label</span><span class="p">,</span> <span class="n">target_model</span><span class="p">))</span>  
+    
+    <span class="k">def</span> <span class="nf">_set_reference_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">app_label</span><span class="p">,</span> <span class="n">visit_model_fieldname</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot; Set the reference model used to get a field value for the predicate. &quot;&quot;&quot;</span>
+        
+        <span class="c"># check if a model other than the default will be used</span>
+        <span class="c"># to get the field value for the predicate</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_reference_model</span><span class="p">:</span>
+            <span class="c"># get the model</span>
+            <span class="n">reference_model</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_reference_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_APP_LABEL</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_reference_model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_MODEL_NAME</span><span class="p">])</span>
+            <span class="c"># check if there is a key to the visit_model or registered subject</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">reference_model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">attname</span><span class="o">==</span><span class="n">visit_model_fieldname</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="o">=</span><span class="n">visit_model_fieldname</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_reference_model_instance</span> <span class="o">=</span> <span class="n">reference_model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">visit_model_fieldname</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">visit_model_instance</span><span class="p">})</span>
+                        <span class="k">break</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">reference_model</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">attname</span><span class="o">==</span><span class="s">&#39;registered_subject&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="o">=</span><span class="s">&#39;registered_subject&#39;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_reference_model_instance</span> <span class="o">=</span> <span class="n">reference_model</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">registered_subject</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">visit_model_instance</span><span class="o">.</span><span class="n">appointment</span><span class="o">.</span><span class="n">registered_subject</span><span class="p">)</span>
+                        <span class="k">break</span>   
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">&#39;Unknown reference_model_filter. Expected {0} or registered_subject. Got {1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">visit_model_fieldname</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reference_model_filter</span><span class="p">))</span>    
+        
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># use the default instance    </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reference_model_instance</span> <span class="o">=</span> <span class="n">instance</span>         
+    
+    <span class="k">def</span> <span class="nf">_build_predicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        
+        <span class="sd">&quot;&quot;&quot; Build the predicate. &quot;&quot;&quot;</span>
+        
+        <span class="c"># the unresolved predicate is a tuple with three items (field, operator, value) </span>
+        <span class="c"># or a tuple of tuples where all but the first tuple have</span>
+        <span class="c"># a boolean operator as an additional and fourth item</span>
+        <span class="c"># ((field, operator, value), (field, operator, value, boolean_operator))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_predicate</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span><span class="p">,)</span>
+        
+        <span class="c"># build the predicate</span>
+        <span class="c"># check that unresolved predicate is a tuple</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span> 
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&#39;First </span><span class="se">\&#39;</span><span class="s">logic</span><span class="se">\&#39;</span><span class="s"> item must be a tuple of (field, operator, value). Got </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span><span class="p">,</span> <span class="p">))</span>     
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_predicate</span><span class="p">:</span>    
+            <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;The logic tuple (or the first tuple of tuples) must must have three items&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Additional tuples in the logic tuple must have a boolean operator as the fourth item&#39;</span><span class="p">)</span>
+            
+            <span class="c"># value from reference model field</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">field_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reference_model_instance</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Field name in tuple </span><span class="si">%s</span><span class="s"> does not exist in reference model </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">unresolved_reference_model</span><span class="p">))</span>    
+            
+            <span class="c"># comparison value</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            
+            <span class="c"># boolean operator if more than one tuple in the logic tuple</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">boolean_operator</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">boolean_operator</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;and&#39;</span><span class="p">,</span> <span class="s">&#39;or&#39;</span><span class="p">,</span> <span class="s">&#39;and not&#39;</span><span class="p">,</span> <span class="s">&#39;or not&#39;</span><span class="p">]:</span>
+                    <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Illegal operator in logic tuple for rule </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">boolean_operator</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+            
+            <span class="c"># add as string for eval    </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_predicate</span> <span class="o">+=</span> <span class="s">&#39; </span><span class="si">%s</span><span class="s"> (</span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> == </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">boolean_operator</span><span class="p">,</span> <span class="n">field_value</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="n">value</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>    
+            <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>    
+            </div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">bhp_entry_rules 1.0 documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../classes.html" >bhp_bucket.classes</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, erik van widenfelt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
