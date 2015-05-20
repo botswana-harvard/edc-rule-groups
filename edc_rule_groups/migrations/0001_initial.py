@@ -23,7 +23,7 @@ class Migration(SchemaMigration):
             ('action', self.gf('django.db.models.fields.CharField')(max_length=25)),
             ('timestamp', self.gf('django.db.models.fields.CharField')(max_length=50, null=True, db_index=True)),
         ))
-        db.send_create_signal('rule_groups', ['RuleHistory'])
+        db.send_create_signal('edc_rule_groups', ['RuleHistory'])
 
 
     def backwards(self, orm):
@@ -32,7 +32,7 @@ class Migration(SchemaMigration):
 
 
     models = {
-        'rule_groups.rulehistory': {
+        'edc_rule_groups.rulehistory': {
             'Meta': {'ordering': "['timestamp']", 'object_name': 'RuleHistory', 'db_table': "'bhp_entry_rules_rulehistory'"},
             'action': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
             'created': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
@@ -49,4 +49,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['rule_groups']
+    complete_apps = ['edc_rule_groups']

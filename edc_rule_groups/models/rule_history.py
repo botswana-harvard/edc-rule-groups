@@ -30,6 +30,6 @@ class RuleHistory(BaseModel):
         super(RuleHistory, self).save(*args, **kwargs)
 
     class Meta:
-        app_label = "rule_groups"
+        app_label = "edc_rule_groups"
         db_table = "bhp_entry_rules_rulehistory"
         ordering = ['timestamp', ]

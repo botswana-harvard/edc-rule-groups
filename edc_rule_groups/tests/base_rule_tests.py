@@ -15,7 +15,7 @@ from edc.testing.classes import TestVisitSchedule, TestAppConfiguration
 from edc.testing.models import TestVisit, TestScheduledModel1, TestScheduledModel2, TestConsentWithMixin
 from edc.testing.tests.factories import TestConsentWithMixinFactory, TestScheduledModel1Factory, TestVisitFactory
 
-from ..classes import RuleGroup, BaseRule, ScheduledDataRule, Logic
+from edc_rule_groups import RuleGroup, BaseRule, ScheduledDataRule, Logic
 from edc.subject.visit_tracking.models import BaseVisitTracking
 
 

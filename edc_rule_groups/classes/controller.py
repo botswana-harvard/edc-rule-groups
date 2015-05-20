@@ -8,7 +8,7 @@ from django.utils.module_loading import module_has_submodule
 
 from edc.subject.entry.models import Entry
 
-from .rule_group import RuleGroup
+from edc_rule_groups import RuleGroup
 
 
 class AlreadyRegistered(Exception):
@@ -104,15 +104,15 @@ class Controller(object):
         return rules
 
     def autodiscover(self):
-        """ Autodiscover rules from a rule_groups module."""
+        """ Autodiscover rules from a edc_rule_groups module."""
         for app in settings.INSTALLED_APPS:
             mod = import_module(app)
             try:
                 before_import_registry = copy.copy(site_rule_groups._registry)
-                import_module('%s.rule_groups' % app)
+                import_module('%s.edc_rule_groups' % app)
             except:
                 site_rule_groups._registry = before_import_registry
-                if module_has_submodule(mod, 'rule_groups'):
+                if module_has_submodule(mod, 'edc_rule_groups'):
                     raise
 
 site_rule_groups = Controller()

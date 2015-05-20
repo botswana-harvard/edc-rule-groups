@@ -2,12 +2,13 @@ import re
 
 from datetime import date, datetime
 
-from django.db.models import get_model, IntegerField
+from django.apps import apps
+from django.db.models import IntegerField
 
 from edc.core.bhp_common.utils import convert_from_camel
 from edc.subject.consent.classes import ConsentHelper
 from edc.subject.lab_tracker.classes import site_lab_tracker
-from edc.subject.visit_tracking.models import BaseVisitTracking
+from edc_visit_tracking.models import BaseVisitTracking
 from edc.subject.entry.models import Entry
 
 from .logic import Logic

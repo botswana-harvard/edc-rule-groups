@@ -16,7 +16,7 @@ from edc.core.bhp_variables.models import StudySite
 from edc.subject.entry.models import RequisitionPanel
 from edc.constants import NOT_REQUIRED, REQUIRED
 
-from ..classes import RuleGroup, RequisitionRule, Logic
+from edc_rule_groups import RuleGroup, RequisitionRule, Logic
 
 
 class RequisitionRuleTests(TestCase):
