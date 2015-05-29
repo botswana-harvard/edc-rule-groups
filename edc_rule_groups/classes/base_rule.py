@@ -3,13 +3,10 @@ import re
 from datetime import date, datetime
 
 from django.apps import apps
+from django.core.exceptions import ImproperlyConfigured
 from django.db.models import IntegerField
 
-from edc.core.bhp_common.utils import convert_from_camel
-from edc.subject.consent.classes import ConsentHelper
-from edc.subject.lab_tracker.classes import site_lab_tracker
-from edc_visit_tracking.models import BaseVisitTracking
-from edc.subject.entry.models import Entry
+from edc_base.utils import convert_from_camel
 
 from .logic import Logic
 
@@ -34,7 +31,6 @@ class BaseRule(object):
         self._source_instance = None
         self._target_model = None
         self._unresolved_predicate = None
-        self._visit_instance = None
 
         self.filter_model_attr = None
         self.filter_model_cls = None
@@ -45,6 +41,7 @@ class BaseRule(object):
         self.target_model_list = []
         self.target_model_names = []
         self.visit_attr_name = None
+        self.visit_instance = None
 
         self.logic = kwargs.get('logic')
         self.target_model_list = kwargs.get('target_model')
@@ -105,7 +102,7 @@ class BaseRule(object):
 
         self._target_model = None
         try:
-            model_cls = get_model(self.app_label, model_cls)
+            model_cls = apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
         try:
@@ -224,20 +221,17 @@ class BaseRule(object):
         """ Returns a field value either by applying getattr to the source model or, if the field name matches one in RegisteredSubject, returns that value."""
         self._predicate_field_value = None
         if field_name == 'consent_version':
-            self._predicate_field_value = ConsentHelper(self.visit_instance, suppress_exception=True).get_current_consent_version()
-            if not self._predicate_field_value:
-                self._predicate_field_value = 0
+            raise ImproperlyConfigured('Predicate value no longer available using keyword \'consent_version\'.')
+#             self._predicate_field_value = ConsentHelper(self.visit_instance, suppress_exception=True).get_current_consent_version()
+#             if not self._predicate_field_value:
+#                 self._predicate_field_value = 0
         elif field_name == 'hiv_status':
-            self._predicate_field_value, is_default_value = site_lab_tracker.get_value(
-                'HIV',
-                self.visit_instance.get_subject_identifier(),
-                self.visit_instance.get_subject_type(),
-                self.visit_instance.report_datetime)
+            raise ImproperlyConfigured('Predicate value no longer available using keyword \'hiv_status\'.')
         else:
             self._predicate_field_value = getattr(self.source_instance, field_name)
 
         if self._predicate_field_value:
-            if isinstance(self._predicate_field_value, basestring):
+            if isinstance(self._predicate_field_value, str):
                 self._predicate_field_value = re.escape(self._predicate_field_value).lower()
             else:
                 field_inst = [fld for fld in self.source_instance._meta.fields if fld.name == field_name]
@@ -253,7 +247,7 @@ class BaseRule(object):
     def predicate_comparative_value(self, value):
         self._predicate_comparative_value = value
         if self._predicate_comparative_value:
-            if isinstance(self._predicate_comparative_value, basestring):
+            if isinstance(self._predicate_comparative_value, str):
                 self._predicate_comparative_value = re.escape(self._predicate_comparative_value).lower()
 
     @property
@@ -267,7 +261,7 @@ class BaseRule(object):
             self._unresolved_predicate = self.logic.predicate
         else:
             self._unresolved_predicate = value
-        if isinstance(self._unresolved_predicate[0], basestring):
+        if isinstance(self._unresolved_predicate[0], str):
             self._unresolved_predicate = (self._unresolved_predicate, )
         elif isinstance(self._unresolved_predicate[0], tuple):
             pass
@@ -329,14 +323,14 @@ class BaseRule(object):
                     # check type of field value and comparative value,
                     # must be the same or <Some>Type to NoneType
                     # if a or b are string or None
-                    if ((isinstance(self.predicate_field_value, (unicode, basestring)) or
+                    if ((isinstance(self.predicate_field_value, str) or
                             self.predicate_field_value is None) and (
-                                isinstance(self.predicate_comparative_value, (unicode, basestring)) or
+                                isinstance(self.predicate_comparative_value, str) or
                                 self.predicate_comparative_value is None)):
                         predicate_template = ' {logical_operator} (\'{field_value}\' {operator} \'{comparative_value}\')'
                         self._predicate = self._predicate.replace('\'None\'', 'None')
                     # if a or b are number or None
-                    elif (isinstance(self.predicate_field_value, (int, long, float)) or self.predicate_field_value is None) and (isinstance(self.predicate_comparative_value, (int, long, float)) or self.predicate_comparative_value is None):
+                    elif (isinstance(self.predicate_field_value, (int, float)) or self.predicate_field_value is None) and (isinstance(self.predicate_comparative_value, (int, float)) or self.predicate_comparative_value is None):
                         predicate_template = ' {logical_operator} ({field_value} {operator} {comparative_value})'
                     # if a is a date and b is a date, datetime
                     elif isinstance(self.predicate_field_value, (date)) and isinstance(self.predicate_comparative_value, (date, datetime)):
@@ -372,16 +366,6 @@ class BaseRule(object):
                         comparative_value=self.predicate_comparative_value)
                     n += 1
         return self._predicate
-
-    @property
-    def visit_instance(self):
-        return self._visit_instance
-
-    @visit_instance.setter
-    def visit_instance(self, visit_instance):
-        if not isinstance(visit_instance, BaseVisitTracking):
-            raise TypeError('Parameter \'visit_instance\' must be an instance of BaseVisitTracking.')
-        self._visit_instance = visit_instance
 
     @property
     def source_instance(self):

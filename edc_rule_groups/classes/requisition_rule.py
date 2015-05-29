@@ -1,7 +1,7 @@
-from django.db.models import get_model
+from django.apps import apps
 
-from edc.core.bhp_common.utils import convert_from_camel
-from edc.subject.entry.models import RequisitionPanel
+from edc_base.utils import convert_from_camel
+from edc_entry.models import RequisitionPanel
 
 from .base_rule import BaseRule
 
@@ -14,8 +14,8 @@ class RequisitionRule(BaseRule):
         super(RequisitionRule, self).__init__(*args, **kwargs)
         if 'target_requisition_panels' not in kwargs:
             raise KeyError('{0} is missing required attribute \'target_requisition_panels\''.format(self.__class__.__name__))
-        from edc.entry_meta_data.helpers import RequisitionMetaDataHelper
-        from edc.entry_meta_data.models import RequisitionMetaData
+        from edc_entry.helpers import RequisitionMetaDataHelper
+        from edc_entry.models import RequisitionMetaData
         self.entry_class = RequisitionMetaDataHelper
         self.meta_data_model = RequisitionMetaData
         self.target_requisition_panels = kwargs.get('target_requisition_panels')
@@ -58,7 +58,7 @@ class RequisitionRule(BaseRule):
 
         self._target_model = None
         try:
-            model_cls = get_model(self.app_label, model_cls)
+            model_cls = apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
         try:
