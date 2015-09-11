@@ -23,7 +23,7 @@ setup(
     zip_safe=False,
     keywords='django data collection',
     install_requires=[
-        'Django>=1.7',
+        'Django>=1.8',
         'django-extensions>=1.5.5',
         'unipath>=1.1',
     ],
