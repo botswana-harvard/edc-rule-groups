@@ -219,7 +219,8 @@ class BaseRule(object):
 
     @predicate_field_value.setter
     def predicate_field_value(self, field_name):
-        """ Returns a field value either by applying getattr to the source model or, if the field name matches one in RegisteredSubject, returns that value."""
+        """ Returns a field value either by applying getattr to the
+        source model or, if the field name matches one in RegisteredSubject, returns that value."""
         self._predicate_field_value = None
         if field_name == 'hiv_status':
             self._predicate_field_value, _ = site_lab_tracker.get_value(
@@ -268,7 +269,9 @@ class BaseRule(object):
         else:
             raise TypeError('First item in predicate must be a string or tuple of (field, operator, value).')
         if not isinstance(self._unresolved_predicate, tuple):
-            raise TypeError('First \'logic\' item must be a tuple of (field, operator, value). Got %s' % (self._unresolved_predicate,))
+            raise TypeError(
+                'First \'logic\' item must be a tuple of (field, operator, value). Got {}'.format(
+                    self._unresolved_predicate,))
 
     def describe(self):
         if hasattr(self.logic.predicate, '__call__'):
@@ -327,20 +330,26 @@ class BaseRule(object):
                             self.predicate_field_value is None) and (
                                 isinstance(self.predicate_comparative_value, (unicode, basestring)) or
                                 self.predicate_comparative_value is None)):
-                        predicate_template = ' {logical_operator} (\'{field_value}\' {operator} \'{comparative_value}\')'
+                        predicate_template = (
+                            ' {logical_operator} (\'{field_value}\' {operator} \'{comparative_value}\')')
                         self._predicate = self._predicate.replace('\'None\'', 'None')
                     # if a or b are number or None
-                    elif (isinstance(self.predicate_field_value, (int, long, float)) or self.predicate_field_value is None) and (isinstance(self.predicate_comparative_value, (int, long, float)) or self.predicate_comparative_value is None):
+                    elif ((isinstance(self.predicate_field_value, (int, long, float)) or
+                           self.predicate_field_value is None) and
+                          (isinstance(self.predicate_comparative_value, (int, long, float)) or
+                           self.predicate_comparative_value is None)):
                         predicate_template = ' {logical_operator} ({field_value} {operator} {comparative_value})'
                     # if a is a date and b is a date, datetime
-                    elif isinstance(self.predicate_field_value, (date)) and isinstance(self.predicate_comparative_value, (date, datetime)):
+                    elif (isinstance(self.predicate_field_value, (date)) and
+                          isinstance(self.predicate_comparative_value, (date, datetime))):
                         if isinstance(self.predicate_comparative_value, datetime):
                             # convert b to date to match type of a
                             self.predicate_comparative_value = date(date.year, date.month, date.day)
                         predicate_template = (' {logical_operator} (datetime.strptime({field_value},\'%Y-%m-%d\') '
                                               '{operator} datetime.strptime({comparative_value},\'%Y-%m-%d\'))')
                     # if a is a datetime and b is a date, datetime
-                    elif isinstance(self.predicate_field_value, (datetime)) and isinstance(self.predicate_comparative_value, (date, datetime)):
+                    elif (isinstance(self.predicate_field_value, (datetime)) and
+                          isinstance(self.predicate_comparative_value, (date, datetime))):
                         if isinstance(self.predicate_comparative_value, date):
                             # convert a to date if b is a date
                             self.predicate_field_value = date(date.year, date.month, date.day)
@@ -355,7 +364,6 @@ class BaseRule(object):
                                                 self.predicate_field_value, self.predicate_comparative_value))
                         else:
                             pass
-                            # raise TypeError('Rule predicate values must be of the same data type and be either strings, dates or numbers. Got \'{0}\' and \'{1}\''.format(self.predicate_field_value, self.predicate_comparative_value))
                     self._predicate += predicate_template.format(
                         logical_operator=logical_operator,
                         field_value=self.predicate_field_value,
@@ -381,7 +389,8 @@ class BaseRule(object):
     def source_instance(self):
         """ Sets the source model instance.
 
-        Source model may be any model with a FK to the visit_instance, any model with a FK to registered_subject,
+        Source model may be any model with a FK to the visit_instance,
+        any model with a FK to registered_subject,
         or registered_subject itself.
 
         If the source model instance does not exist (yet), value is None"""
@@ -389,8 +398,10 @@ class BaseRule(object):
             if self.source_model._meta.object_name.lower() == 'registeredsubject':
                 self._source_instance = self.visit_instance.appointment.registered_subject
             elif [fld.name for fld in self.source_model._meta.fields if fld.name == 'registered_subject']:
-                self._source_instance = self.source_model.objects.get(registered_subject=self.visit_instance.appointment.registered_subject)
+                self._source_instance = self.source_model.objects.get(
+                    registered_subject=self.visit_instance.appointment.registered_subject)
             else:
                 if self.source_model.objects.filter(**{self.visit_attr_name: self.visit_instance}).exists():
-                    self._source_instance = self.source_model.objects.get(**{self.visit_attr_name: self.visit_instance})
+                    self._source_instance = self.source_model.objects.get(
+                        **{self.visit_attr_name: self.visit_instance})
         return self._source_instance

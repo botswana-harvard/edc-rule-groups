@@ -1,4 +1,0 @@
-
-
-class RuleError(Exception):
-    pass

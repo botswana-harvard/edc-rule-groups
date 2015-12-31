@@ -1,6 +1,8 @@
 from django.db.models import get_model
 
 from edc.core.bhp_common.utils import convert_from_camel
+from edc_meta_data.helpers import RequisitionMetaDataHelper
+from edc_meta_data.models import RequisitionMetaData
 
 from .base_rule import BaseRule
 
@@ -12,9 +14,8 @@ class RequisitionRule(BaseRule):
         self.target_requisition_panel = None
         super(RequisitionRule, self).__init__(*args, **kwargs)
         if 'target_requisition_panels' not in kwargs:
-            raise KeyError('{0} is missing required attribute \'target_requisition_panels\''.format(self.__class__.__name__))
-        from edc.entry_meta_data.helpers import RequisitionMetaDataHelper
-        from edc.entry_meta_data.models import RequisitionMetaData
+            raise KeyError('{0} is missing required attribute \'target_requisition_panels\''.format(
+                self.__class__.__name__))
         self.entry_class = RequisitionMetaDataHelper
         self.meta_data_model = RequisitionMetaData
         self.target_requisition_panels = kwargs.get('target_requisition_panels')
@@ -34,7 +35,8 @@ class RequisitionRule(BaseRule):
                     self.target_model.entry_meta_data_manager.visit_instance = self.visit_instance
                     self.target_model.entry_meta_data_manager.target_requisition_panel = self.target_requisition_panel
                     try:
-                        self.target_model.entry_meta_data_manager.instance = self.target_model.objects.get(**self.target_model.entry_meta_data_manager.query_options)
+                        self.target_model.entry_meta_data_manager.instance = self.target_model.objects.get(
+                            **self.target_model.entry_meta_data_manager.query_options)
                     except self.target_model.DoesNotExist:
                         self.target_model.entry_meta_data_manager.instance = None
                     self.target_model.entry_meta_data_manager.update_meta_data_from_rule(change_type)
@@ -59,7 +61,7 @@ class RequisitionRule(BaseRule):
         try:
             model_cls = get_model(self.app_label, model_cls)
         except AttributeError:
-            pass  # type object '<model_cls>' has no attribute 'lower'
+            pass
         try:
             self.entry_class.entry_model.objects.get(
                 visit_definition=self.visit_instance.appointment.visit_definition,

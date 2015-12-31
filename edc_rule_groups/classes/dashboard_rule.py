@@ -31,7 +31,7 @@ class DashboardRuleContainer(object):
     def register(self, dashboard_rule):
 
         # register a rule as long as it is not already in the list
-        if not dashboard_rule.__dict__ in [dashboard.__dict__ for dashboard in self.dashboard_rules]:
+        if dashboard_rule.__dict__ not in [dashboard.__dict__ for dashboard in self.dashboard_rules]:
             self.dashboard_rules.append(dashboard_rule)
 
     def unregister(self, dashboard_rule):

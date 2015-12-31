@@ -1,5 +1,8 @@
 from django.db.models import get_model
 
+from edc_meta_data.helpers import CrfMetaDataHelper
+from edc_meta_data.models import CrfMetaData
+
 from .base_rule import BaseRule
 
 
@@ -35,8 +38,6 @@ class ScheduledDataRule(BaseRule):
     """
 
     def __init__(self, *args, **kwargs):
-        from edc.entry_meta_data.helpers import ScheduledEntryMetaDataHelper
-        from edc.entry_meta_data.models import ScheduledEntryMetaData
         super(ScheduledDataRule, self).__init__(*args, **kwargs)
-        self.entry_class = ScheduledEntryMetaDataHelper
-        self.meta_data_model = ScheduledEntryMetaData
+        self.entry_class = CrfMetaDataHelper
+        self.meta_data_model = CrfMetaData

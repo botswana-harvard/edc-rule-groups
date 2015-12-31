@@ -19,7 +19,9 @@ class UserModel(object):
         else:
             pass
         if not self.model_cls:
-            raise AttributeError('Unable to set user model_cls. Need either kwargs \'app_label\' and \'model_name\' or the user model class as an arg or tuple.')
+            raise AttributeError(
+                'Unable to set user model_cls. Need either kwargs \'app_label\' and '
+                '\'model_name\' or the user model class as an arg or tuple.')
         if 'field_name' in kwargs:
             self.field_name = kwargs.get('field_name')
         else:

@@ -1,18 +1,17 @@
 from django.test import TestCase
 
-from edc.entry_meta_data.models import RequisitionMetaData
+from edc.subject.lab_tracker.classes import site_lab_tracker
+from edc_appointment.models import Appointment
+from edc_constants.constants import NOT_REQUIRED, REQUIRED, NO, YES
 from edc_lab.lab_profile.classes import site_lab_profiles
 from edc_lab.lab_profile.exceptions import AlreadyRegistered as AlreadyRegisteredLabProfile
-from edc.subject.entry.models import RequisitionPanel
-from edc.subject.lab_tracker.classes import site_lab_tracker
+from edc_meta_data.models import RequisitionPanel, RequisitionMetaData
+from edc_registration.models import RegisteredSubject
 from edc_rule_groups.classes import site_rule_groups
 from edc_testing.classes import TestLabProfile
 from edc_testing.classes import TestVisitSchedule, TestAppConfiguration
 from edc_testing.models import TestVisit, TestScheduledModel1, TestConsentWithMixin, TestPanel, TestAliquotType
 from edc_testing.tests.factories import TestConsentWithMixinFactory, TestScheduledModel1Factory, TestRequisitionFactory
-from edc_appointment.models import Appointment
-from edc_constants.constants import NOT_REQUIRED, REQUIRED, NO, YES
-from edc_registration.models import RegisteredSubject
 from edc_visit_schedule.models import VisitDefinition
 from edc_visit_tracking.tests.factories import TestVisitFactory
 
