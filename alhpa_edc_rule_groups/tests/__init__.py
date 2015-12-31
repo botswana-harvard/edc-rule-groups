@@ -1,2 +1,1 @@
-from .base_rule_tests import RuleTests
-from .requisition_rule_tests import RequisitionRuleTests
+from .test_base_rule import TestBaseRule
