@@ -16,7 +16,7 @@ setup(
     author_email='ew2789@gmail.com',
     packages=find_packages(),
     include_package_data=True,
-    url='http://github/botswana-harvard/edc-rule-groups',
+    url='http://github.com/botswana-harvard/edc-rule-groups',
     license='GPL licence, see LICENCE',
     description='Add custom data entry rules and conditions.',
     long_description=README,

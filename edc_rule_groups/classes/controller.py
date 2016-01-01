@@ -3,10 +3,9 @@ import copy
 from collections import OrderedDict
 
 from django.conf import settings
+from django.db.models import get_model
 from django.utils.importlib import import_module
 from django.utils.module_loading import module_has_submodule
-
-from edc_meta_data.models import CrfEntry
 
 from .rule_group import RuleGroup
 
@@ -64,6 +63,7 @@ class Controller(object):
     def update_for_visit_definition(self, visit_instance):
         """Given a visit model instance, run all rules in the rule group
         module for the visit definition in order of the entries (rule source model)."""
+        CrfEntry = get_model('edc_meta_data', 'CrfEntry')
         for entry in CrfEntry.objects.filter(
                 visit_definition__code=visit_instance.appointment.visit_definition.code).order_by('entry_order'):
             source_model = entry.get_model()
