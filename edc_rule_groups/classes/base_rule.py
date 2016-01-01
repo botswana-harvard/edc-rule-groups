@@ -17,7 +17,7 @@ class BaseRule(object):
 
     Rules are class attributes of a rule group.
 
-    ..see_also: comment on :module:`ScheduledDataRule`"""
+    ..see_also: comment on :module:`CrfRule`"""
 
 #     entry_class = None
 #     meta_data_model = None

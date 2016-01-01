@@ -1,8 +1,7 @@
 from django.db.models import get_model
 
-from edc.core.bhp_common.utils import convert_from_camel
-from edc_meta_data.helpers import RequisitionMetaDataHelper
-from edc_meta_data.models import RequisitionMetaData
+from edc_base.utils import convert_from_camel
+from edc_meta_data.models import RequisitionMetaData, RequisitionMetaDataHelper
 
 from .base_rule import BaseRule
 

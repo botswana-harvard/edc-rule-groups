@@ -7,7 +7,7 @@ from edc_lab.lab_profile.classes import site_lab_profiles
 from edc_lab.lab_profile.exceptions import AlreadyRegistered as AlreadyRegisteredLabProfile
 from edc_meta_data.models import CrfMetaData
 from edc_registration.models import RegisteredSubject
-from edc_rule_groups.classes import site_rule_groups
+from edc_rule_groups.classes import site_rule_groups, RuleGroup, BaseRule, CrfRule, Logic
 from edc_testing.classes import TestLabProfile
 from edc_testing.classes import TestVisitSchedule, TestAppConfiguration
 from edc_testing.models import TestVisit, TestScheduledModel1, TestScheduledModel2, TestConsentWithMixin
@@ -15,8 +15,6 @@ from edc_testing.tests.factories import TestConsentWithMixinFactory, TestSchedul
 from edc_visit_schedule.models import VisitDefinition
 from edc_visit_tracking.models import VisitModelMixin
 from edc_visit_tracking.tests.factories import TestVisitFactory
-
-from ..classes import RuleGroup, BaseRule, ScheduledDataRule, Logic
 
 
 def func_condition_true(visit_instance):
@@ -54,7 +52,7 @@ class RuleTests(TestCase):
         # the rules in this rule group will be only evaluated when the visit instance
         # is created or saved. Note source_fk is None.
         class TestRuleGroupRs(RuleGroup):
-            test_rule = ScheduledDataRule(
+            test_rule = CrfRule(
                 logic=Logic(
                     predicate=(('gender', 'equals', 'M')),
                     consequence='not_required',
@@ -72,7 +70,7 @@ class RuleTests(TestCase):
         # the rules in this rule group will be evaluated when the source instance
         # is created or saved.
         class TestRuleGroupSched(RuleGroup):
-            test_rule = ScheduledDataRule(
+            test_rule = CrfRule(
                 logic=Logic(
                     predicate=(('f1', 'equals', NO)),
                     consequence='not_required',
@@ -90,7 +88,7 @@ class RuleTests(TestCase):
         # the rules in this rule group will only evaluated when the visit instance
         # is created or saved.
         class TestRuleGroupConsent(RuleGroup):
-            test_rule = ScheduledDataRule(
+            test_rule = CrfRule(
                 logic=Logic(
                     predicate=(('may_store_samples', 'equals', NO)),
                     consequence='not_required',
@@ -104,7 +102,7 @@ class RuleTests(TestCase):
         site_rule_groups.register(TestRuleGroupConsent)
 
         class TestRuleGroupConsentFunc(RuleGroup):
-            test_rule = ScheduledDataRule(
+            test_rule = CrfRule(
                 logic=Logic(
                     predicate=func_condition_true,
                     consequence='not_required',

@@ -7,15 +7,13 @@ from edc_lab.lab_profile.classes import site_lab_profiles
 from edc_lab.lab_profile.exceptions import AlreadyRegistered as AlreadyRegisteredLabProfile
 from edc_meta_data.models import RequisitionPanel, RequisitionMetaData
 from edc_registration.models import RegisteredSubject
-from edc_rule_groups.classes import site_rule_groups
+from edc_rule_groups.classes import site_rule_groups, RuleGroup, RequisitionRule, Logic
 from edc_testing.classes import TestLabProfile
 from edc_testing.classes import TestVisitSchedule, TestAppConfiguration
 from edc_testing.models import TestVisit, TestScheduledModel1, TestConsentWithMixin, TestPanel, TestAliquotType
 from edc_testing.tests.factories import TestConsentWithMixinFactory, TestScheduledModel1Factory, TestRequisitionFactory
 from edc_visit_schedule.models import VisitDefinition
 from edc_visit_tracking.tests.factories import TestVisitFactory
-
-from ..classes import RuleGroup, RequisitionRule, Logic
 
 
 class RequisitionRuleTests(TestCase):
@@ -61,18 +59,18 @@ class RequisitionRuleTests(TestCase):
                 app_label = 'testing'
                 source_fk = (TestVisit, 'test_visit')
                 source_model = TestScheduledModel1
+
+        self.study_site = '40'
         site_rule_groups.register(TestRuleGroupSched)
-
         self.test_rule_group_sched_cls = TestRuleGroupSched
-
         self.test_visit_factory = TestVisitFactory
-
         self.visit_definition = VisitDefinition.objects.get(code='1000')
-
-        self.test_consent = TestConsentWithMixinFactory(gender='M', study_site=StudySite.objects.all()[0], may_store_samples=YES)
-
-        self.registered_subject = RegisteredSubject.objects.get(subject_identifier=self.test_consent.subject_identifier)
-        self.appointment = Appointment.objects.get(registered_subject=self.registered_subject)
+        self.test_consent = TestConsentWithMixinFactory(
+            gender='M', study_site=self.study_site, may_store_samples=YES)
+        self.registered_subject = RegisteredSubject.objects.get(
+            subject_identifier=self.test_consent.subject_identifier)
+        self.appointment = Appointment.objects.get(
+            registered_subject=self.registered_subject)
 
     def test_rule(self):
         """Assert sets the target_requisition_panels."""
