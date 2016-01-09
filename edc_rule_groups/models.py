@@ -31,5 +31,4 @@ class RuleHistory(BaseModel):
 
     class Meta:
         app_label = "edc_rule_groups"
-        db_table = "bhp_entry_rules_rulehistory"
         ordering = ['timestamp', ]
