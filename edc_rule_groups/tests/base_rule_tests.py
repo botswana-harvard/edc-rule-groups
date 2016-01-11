@@ -1,6 +1,5 @@
 from django.test import TestCase
 
-from edc.subject.lab_tracker.classes import site_lab_tracker
 from edc_appointment.models import Appointment
 from edc_constants.constants import NOT_REQUIRED, NEW, YES, NO
 from edc_lab.lab_profile.classes import site_lab_profiles
@@ -45,7 +44,6 @@ class RuleTests(TestCase):
         except AlreadyRegisteredLabProfile:
             pass
         TestAppConfiguration().prepare()
-        site_lab_tracker.autodiscover()
         TestVisitSchedule().build()
 
         # a test rule group where the source model is RegisteredSubject

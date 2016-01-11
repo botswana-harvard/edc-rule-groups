@@ -4,7 +4,6 @@ from datetime import date, datetime
 
 from django.db.models import get_model, IntegerField
 
-from edc.subject.lab_tracker.classes import site_lab_tracker
 from edc_base.utils import convert_from_camel
 from edc_visit_tracking.models import VisitModelMixin
 
@@ -222,14 +221,14 @@ class BaseRule(object):
         """ Returns a field value either by applying getattr to the
         source model or, if the field name matches one in RegisteredSubject, returns that value."""
         self._predicate_field_value = None
-        if field_name == 'hiv_status':
-            self._predicate_field_value, _ = site_lab_tracker.get_value(
-                'HIV',
-                self.visit_instance.get_subject_identifier(),
-                self.visit_instance.get_subject_type(),
-                self.visit_instance.report_datetime)
-        else:
-            self._predicate_field_value = getattr(self.source_instance, field_name)
+#         if field_name == 'hiv_status':
+#             self._predicate_field_value, _ = site_lab_tracker.get_value(
+#                 'HIV',
+#                 self.visit_instance.get_subject_identifier(),
+#                 self.visit_instance.get_subject_type(),
+#                 self.visit_instance.report_datetime)
+#         else:
+        self._predicate_field_value = getattr(self.source_instance, field_name)
 
         if self._predicate_field_value:
             if isinstance(self._predicate_field_value, basestring):
