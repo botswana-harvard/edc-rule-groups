@@ -2,7 +2,11 @@ import re
 
 from datetime import date, datetime
 
-from django.db.models import get_model, IntegerField
+try:
+    from django.db import models as apps #get_model
+except:
+    from django.apps import apps
+from django.db.models import IntegerField
 
 from edc_base.utils import convert_from_camel
 from edc_visit_tracking.models import VisitModelMixin
@@ -102,7 +106,7 @@ class BaseRule(object):
 
         self._target_model = None
         try:
-            model_cls = get_model(self.app_label, model_cls)
+            model_cls = apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
         try:

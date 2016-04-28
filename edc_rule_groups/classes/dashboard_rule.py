@@ -1,4 +1,7 @@
-from django.db.models import get_model
+try:
+    from django.db import models as apps
+except:
+    from django.apps import apps
 
 from .controller import site_rule_groups
 
@@ -9,7 +12,7 @@ class DashboardRule(object):
 
         self.bucket_type = bucket_type
         if isinstance(model, tuple):
-            self.model = get_model(model[0], model[1])
+            self.model = apps.get_model(model[0], model[1])
         else:
             self.model = model
         self.visit_model_instance = visit_model_instance
