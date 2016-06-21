@@ -1,10 +1,7 @@
 import inspect
 import copy
 
-try:
-    from django.db import models as apps
-except:
-    from django.apps import apps
+from django.apps import apps
 from django.db import models
 
 from .base_rule import BaseRule
@@ -58,7 +55,7 @@ class BaseRuleGroup(type):
                     if meta:
                         rule.app_label = meta.app_label
                         for item in rule.target_model_list:
-                            if isinstance(item, (basestring, tuple)):
+                            if isinstance(item, (str, tuple)):
                                 rule.target_model_names.append(item)
                                 model_name = rule.target_model_list.pop(rule.target_model_list.index(item))
                                 if isinstance(model_name, tuple):
@@ -91,13 +88,13 @@ class BaseRuleGroup(type):
         return super(BaseRuleGroup, cls).__new__(cls, name, bases, attrs)
 
 
-class RuleGroup(object):
+class RuleGroup(object, metaclass=BaseRuleGroup):
 
     """ All rule groups inherit from this.
 
     RuleGroups are contained by the Controller
     """
-    __metaclass__ = BaseRuleGroup
+    #__metaclass__ = BaseRuleGroup
 
     def __repr__(self):
         return self.name
