@@ -89,13 +89,12 @@ class BaseRuleGroup(type):
         return super(BaseRuleGroup, cls).__new__(cls, name, bases, attrs)
 
 
-class RuleGroup:
+class RuleGroup(object, metaclass=BaseRuleGroup):
 
     """ All rule groups inherit from this.
 
     RuleGroups are contained by the Controller
     """
-    __metaclass__ = BaseRuleGroup
 
     def __repr__(self):
         return self.name

@@ -101,12 +101,13 @@ class BaseRule:
         Target models must be listed in the visit definition for the
         current visit_instance, e.g. Entry of visit_instance.appointment.visit_definition.
         If it is not listed in the visit_definition, target_model returns None."""
-
         self._target_model = None
         try:
-            model_cls = django_apps.get_model(self.app_label, model_cls)
+            model_cls = django_apps.get_model(model_cls[0], model_cls[1])
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
+        except TypeError:
+            pass
         try:
             self.entry_class.entry_model.objects.get(
                 visit_definition=self.visit_instance.appointment.visit_definition,
@@ -125,9 +126,9 @@ class BaseRule:
             condition = self.predicate(self.visit_instance)
             # debug print condition, self.predicate, self.name
         except TypeError as e:
-            if '\'str\' object is not callable' in e:
+            if '\'str\' object is not callable' in str(e):
                 condition = eval(self.predicate)
-            elif '\'NoneType\' object is not callable' in e:
+            elif '\'NoneType\' object is not callable' in str(e):
                 return None
             else:
                 raise TypeError('{0}. See rule {1}'.format(e, self.name))
