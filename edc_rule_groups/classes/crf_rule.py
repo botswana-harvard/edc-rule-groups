@@ -1,4 +1,6 @@
-from edc_meta_data.models import CrfMetaData, CrfMetaDataHelper
+from django.apps import apps as django_apps
+
+from edc_meta_data.helpers import CrfMetaDataHelper
 
 from .base_rule import BaseRule
 
@@ -39,4 +41,4 @@ class CrfRule(BaseRule):
     def __init__(self, *args, **kwargs):
         super(CrfRule, self).__init__(*args, **kwargs)
         self.entry_class = CrfMetaDataHelper
-        self.meta_data_model = CrfMetaData
+        self.meta_data_model = django_apps.get_app_config('edc_meta_data').crf_meta_data_model

@@ -1,10 +1,7 @@
-try:
-   from django.db import models as apps
-except:
-   from django.apps import apps
+from django.apps import apps as django_apps
 
 from edc_base.utils import convert_from_camel
-from edc_meta_data.models import RequisitionMetaData, RequisitionMetaDataHelper
+from edc_meta_data.helpers import RequisitionMetaDataHelper
 
 from .base_rule import BaseRule
 
@@ -19,7 +16,7 @@ class RequisitionRule(BaseRule):
             raise KeyError('{0} is missing required attribute \'target_requisition_panels\''.format(
                 self.__class__.__name__))
         self.entry_class = RequisitionMetaDataHelper
-        self.meta_data_model = RequisitionMetaData
+        self.meta_data_model = django_apps.get_app_config('edc_meta_data').requisition_meta_data_model
         self.target_requisition_panels = kwargs.get('target_requisition_panels')
 
     def run(self, visit_instance):
@@ -61,7 +58,7 @@ class RequisitionRule(BaseRule):
 
         self._target_model = None
         try:
-            model_cls = apps.get_model(self.app_label, model_cls)
+            model_cls = django_apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass
         try:

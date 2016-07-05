@@ -1,11 +1,9 @@
 import re
+import six
 
 from datetime import date, datetime
 
-try:
-    from django.db import models as apps #get_model
-except:
-    from django.apps import apps
+from django.apps import apps as django_apps
 from django.db.models import IntegerField
 
 from edc_base.utils import convert_from_camel
@@ -15,7 +13,7 @@ from edc_visit_tracking.models import VisitModelMixin
 from .logic import Logic
 
 
-class BaseRule(object):
+class BaseRule:
     """Base class for all rules.
 
     Rules are class attributes of a rule group.
@@ -106,7 +104,7 @@ class BaseRule(object):
 
         self._target_model = None
         try:
-            model_cls = apps.get_model(self.app_label, model_cls)
+            model_cls = django_apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
         try:
@@ -235,7 +233,7 @@ class BaseRule(object):
         self._predicate_field_value = getattr(self.source_instance, field_name)
 
         if self._predicate_field_value:
-            if isinstance(self._predicate_field_value, basestring):
+            if isinstance(self._predicate_field_value, six.string_types):
                 self._predicate_field_value = re.escape(self._predicate_field_value).lower()
             else:
                 field_inst = [fld for fld in self.source_instance._meta.fields if fld.name == field_name]
@@ -251,7 +249,7 @@ class BaseRule(object):
     def predicate_comparative_value(self, value):
         self._predicate_comparative_value = value
         if self._predicate_comparative_value:
-            if isinstance(self._predicate_comparative_value, basestring):
+            if isinstance(self._predicate_comparative_value, six.string_types):
                 self._predicate_comparative_value = re.escape(self._predicate_comparative_value).lower()
 
     @property
@@ -265,7 +263,7 @@ class BaseRule(object):
             self._unresolved_predicate = self.logic.predicate
         else:
             self._unresolved_predicate = value
-        if isinstance(self._unresolved_predicate[0], basestring):
+        if isinstance(self._unresolved_predicate[0], six.string_types):
             self._unresolved_predicate = (self._unresolved_predicate, )
         elif isinstance(self._unresolved_predicate[0], tuple):
             pass
@@ -329,17 +327,17 @@ class BaseRule(object):
                     # check type of field value and comparative value,
                     # must be the same or <Some>Type to NoneType
                     # if a or b are string or None
-                    if ((isinstance(self.predicate_field_value, (unicode, basestring)) or
+                    if ((isinstance(self.predicate_field_value, six.string_types) or
                             self.predicate_field_value is None) and (
-                                isinstance(self.predicate_comparative_value, (unicode, basestring)) or
+                                isinstance(self.predicate_comparative_value, six.string_types) or
                                 self.predicate_comparative_value is None)):
                         predicate_template = (
                             ' {logical_operator} (\'{field_value}\' {operator} \'{comparative_value}\')')
                         self._predicate = self._predicate.replace('\'None\'', 'None')
                     # if a or b are number or None
-                    elif ((isinstance(self.predicate_field_value, (int, long, float)) or
+                    elif ((isinstance(self.predicate_field_value, (int, float)) or
                            self.predicate_field_value is None) and
-                          (isinstance(self.predicate_comparative_value, (int, long, float)) or
+                          (isinstance(self.predicate_comparative_value, (int, float)) or
                            self.predicate_comparative_value is None)):
                         predicate_template = ' {logical_operator} ({field_value} {operator} {comparative_value})'
                     # if a is a date and b is a date, datetime

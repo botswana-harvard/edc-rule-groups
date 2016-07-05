@@ -1,18 +1,15 @@
-try:
-    from django.db import models as apps
-except:
-    from django.apps import apps
+from django.apps import apps as django_apps
 
 from .controller import site_rule_groups
 
 
-class DashboardRule(object):
+class DashboardRule:
 
     def __init__(self, bucket_type, model, visit_model_instance, required):
 
         self.bucket_type = bucket_type
         if isinstance(model, tuple):
-            self.model = apps.get_model(model[0], model[1])
+            self.model = django_apps.get_model(model[0], model[1])
         else:
             self.model = model
         self.visit_model_instance = visit_model_instance
