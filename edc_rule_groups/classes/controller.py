@@ -1,5 +1,6 @@
 import copy
 
+from django.apps import apps as django_apps
 from collections import OrderedDict
 
 from django.conf import settings
@@ -116,14 +117,29 @@ class Controller(object):
 
     def autodiscover(self):
         """ Autodiscover rules from a rule_groups module."""
-        for app in settings.INSTALLED_APPS:
-            mod = import_module(app)
+        before_import_registry = None
+        module_name = 'rule_groups'
+        for app in django_apps.app_configs:
             try:
-                before_import_registry = copy.copy(site_rule_groups._registry)
-                import_module('%s.rule_groups' % app)
-            except:
-                site_rule_groups._registry = before_import_registry
-                if module_has_submodule(mod, 'rule_groups'):
-                    raise
+                mod = import_module(app)
+                try:
+                    before_import_registry = copy.copy(site_rule_groups.registry)
+                    import_module('{}.{}'.format(app, module_name))
+                    #sys.stdout.write(' * registered visit schedules from application \'{}\'\n'.format(app))
+                except:
+                    site_rule_groups.registry = before_import_registry
+                    if module_has_submodule(mod, module_name):
+                        raise
+            except ImportError:
+                pass
+        #for app in settings.INSTALLED_APPS:
+        #    mod = import_module(app)
+        #    try:
+        #        before_import_registry = copy.copy(site_rule_groups._registry)
+        #        import_module('%s.rule_groups' % app)
+        #    except:
+        #        site_rule_groups._registry = before_import_registry
+        #        if module_has_submodule(mod, 'rule_groups'):
+        #            raise
 
 site_rule_groups = Controller()
