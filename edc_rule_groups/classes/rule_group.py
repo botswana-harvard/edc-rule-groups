@@ -1,7 +1,7 @@
 import inspect
 import copy
 
-from django.db.models import get_model
+from django.apps import apps
 from django.db import models
 
 from .base_rule import BaseRule
@@ -35,7 +35,7 @@ class BaseRuleGroup(type):
         meta = attrs.pop('Meta', None)
         # source model is the same for all rules in this group, so get it now
         if isinstance(meta.source_model, tuple):
-            source_model = get_model(meta.source_model[0], meta.source_model[1])
+            source_model = apps.get_model(meta.source_model[0], meta.source_model[1])
         else:
             source_model = meta.source_model
         # source fk model and attr are the same for all rules in this group, so get it now
@@ -44,7 +44,7 @@ class BaseRuleGroup(type):
             source_fk_attr = None
         else:
             if isinstance(meta.source_fk[0], tuple):
-                source_fk_model = get_model(meta.source_fk[0][0], meta.source_model[0][1])
+                source_fk_model = apps.get_model(meta.source_fk[0][0], meta.source_model[0][1])
             else:
                 source_fk_model = meta.source_fk[0]
             source_fk_attr = meta.source_fk[1]
@@ -55,13 +55,13 @@ class BaseRuleGroup(type):
                     if meta:
                         rule.app_label = meta.app_label
                         for item in rule.target_model_list:
-                            if isinstance(item, (basestring, tuple)):
+                            if isinstance(item, (str, tuple)):
                                 rule.target_model_names.append(item)
                                 model_name = rule.target_model_list.pop(rule.target_model_list.index(item))
                                 if isinstance(model_name, tuple):
-                                    model_cls = get_model(model_name[0], model_name[1])
+                                    model_cls = apps.get_model(model_name[0], model_name[1])
                                 else:
-                                    model_cls = get_model(meta.app_label, model_name)
+                                    model_cls = apps.get_model(meta.app_label, model_name)
                                 if not model_cls:
                                     raise AttributeError('Attribute \'target_model\' in rule \'{0}.{1}\' '
                                                          'contains a model_name that does not exist. '
@@ -88,13 +88,13 @@ class BaseRuleGroup(type):
         return super(BaseRuleGroup, cls).__new__(cls, name, bases, attrs)
 
 
-class RuleGroup(object):
+class RuleGroup(object, metaclass=BaseRuleGroup):
 
     """ All rule groups inherit from this.
 
     RuleGroups are contained by the Controller
     """
-    __metaclass__ = BaseRuleGroup
+    #__metaclass__ = BaseRuleGroup
 
     def __repr__(self):
         return self.name

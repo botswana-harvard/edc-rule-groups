@@ -1,15 +1,19 @@
-from django.db.models import get_model, Model
+from django.db.models import Model
+try:
+    from django.db import models as apps
+except:
+    from django.apps import apps
 
 
 class UserModel(object):
 
     def __init__(self, *args, **kwargs):
         if 'app_label' in kwargs and 'model_name' in kwargs:
-            self.model_cls = get_model(kwargs.get('app_label'), kwargs.get('model_name'))
+            self.model_cls = apps.get_model(kwargs.get('app_label'), kwargs.get('model_name'))
         if 'model' in kwargs:
             model = kwargs.get('model')
             if isinstance(model, tuple):
-                self.model_cls = get_model(model[0], model[1])
+                self.model_cls = apps.get_model(model[0], model[1])
             elif isinstance(model, Model):
                 self.model_cls = model
             else:

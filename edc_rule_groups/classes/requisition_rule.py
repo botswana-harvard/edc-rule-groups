@@ -1,4 +1,7 @@
-from django.db.models import get_model
+try:
+   from django.db import models as apps
+except:
+   from django.apps import apps
 
 from edc_base.utils import convert_from_camel
 from edc_meta_data.models import RequisitionMetaData, RequisitionMetaDataHelper
@@ -58,7 +61,7 @@ class RequisitionRule(BaseRule):
 
         self._target_model = None
         try:
-            model_cls = get_model(self.app_label, model_cls)
+            model_cls = apps.get_model(self.app_label, model_cls)
         except AttributeError:
             pass
         try:

@@ -2,7 +2,8 @@ import re
 
 from datetime import date, datetime
 
-from django.db.models import get_model, IntegerField
+from django.apps import apps
+from django.db.models import IntegerField
 
 from edc_base.utils import convert_from_camel
 from edc_visit_tracking.models import VisitModelMixin
@@ -99,12 +100,13 @@ class BaseRule(object):
         Target models must be listed in the visit definition for the
         current visit_instance, e.g. Entry of visit_instance.appointment.visit_definition.
         If it is not listed in the visit_definition, target_model returns None."""
-
         self._target_model = None
         try:
-            model_cls = get_model(self.app_label, model_cls)
+            model_cls = apps.get_model(model_cls[0], model_cls[1])
         except AttributeError:
             pass  # type object '<model_cls>' has no attribute 'lower'
+        except TypeError:
+            pass
         try:
             self.entry_class.entry_model.objects.get(
                 visit_definition=self.visit_instance.appointment.visit_definition,
@@ -123,9 +125,9 @@ class BaseRule(object):
             condition = self.predicate(self.visit_instance)
             # debug print condition, self.predicate, self.name
         except TypeError as e:
-            if '\'str\' object is not callable' in e:
+            if '\'str\' object is not callable' in str(e):
                 condition = eval(self.predicate)
-            elif '\'NoneType\' object is not callable' in e:
+            elif '\'NoneType\' object is not callable' in str(e):
                 return None
             else:
                 raise TypeError('{0}. See rule {1}'.format(e, self.name))
@@ -231,7 +233,7 @@ class BaseRule(object):
         self._predicate_field_value = getattr(self.source_instance, field_name)
 
         if self._predicate_field_value:
-            if isinstance(self._predicate_field_value, basestring):
+            if isinstance(self._predicate_field_value, str):
                 self._predicate_field_value = re.escape(self._predicate_field_value).lower()
             else:
                 field_inst = [fld for fld in self.source_instance._meta.fields if fld.name == field_name]
@@ -247,7 +249,7 @@ class BaseRule(object):
     def predicate_comparative_value(self, value):
         self._predicate_comparative_value = value
         if self._predicate_comparative_value:
-            if isinstance(self._predicate_comparative_value, basestring):
+            if isinstance(self._predicate_comparative_value, str):
                 self._predicate_comparative_value = re.escape(self._predicate_comparative_value).lower()
 
     @property
@@ -261,7 +263,7 @@ class BaseRule(object):
             self._unresolved_predicate = self.logic.predicate
         else:
             self._unresolved_predicate = value
-        if isinstance(self._unresolved_predicate[0], basestring):
+        if isinstance(self._unresolved_predicate[0], str):
             self._unresolved_predicate = (self._unresolved_predicate, )
         elif isinstance(self._unresolved_predicate[0], tuple):
             pass
@@ -325,17 +327,17 @@ class BaseRule(object):
                     # check type of field value and comparative value,
                     # must be the same or <Some>Type to NoneType
                     # if a or b are string or None
-                    if ((isinstance(self.predicate_field_value, (unicode, basestring)) or
+                    if ((isinstance(self.predicate_field_value, str) or
                             self.predicate_field_value is None) and (
-                                isinstance(self.predicate_comparative_value, (unicode, basestring)) or
+                                isinstance(self.predicate_comparative_value, str) or
                                 self.predicate_comparative_value is None)):
                         predicate_template = (
                             ' {logical_operator} (\'{field_value}\' {operator} \'{comparative_value}\')')
                         self._predicate = self._predicate.replace('\'None\'', 'None')
                     # if a or b are number or None
-                    elif ((isinstance(self.predicate_field_value, (int, long, float)) or
+                    elif ((isinstance(self.predicate_field_value, (int, float)) or
                            self.predicate_field_value is None) and
-                          (isinstance(self.predicate_comparative_value, (int, long, float)) or
+                          (isinstance(self.predicate_comparative_value, (int, float)) or
                            self.predicate_comparative_value is None)):
                         predicate_template = ' {logical_operator} ({field_value} {operator} {comparative_value})'
                     # if a is a date and b is a date, datetime
