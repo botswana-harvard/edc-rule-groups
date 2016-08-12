@@ -33,7 +33,7 @@ class RequisitionRule(BaseRule):
                 self._source_instance = None
                 self._target_instance = None
                 change_type = self.evaluate()
-                if change_type:
+                if change_type and self.target_model:
                     self.target_model.entry_meta_data_manager.visit_instance = self.visit_instance
                     self.target_model.entry_meta_data_manager.target_requisition_panel = self.target_requisition_panel
                     try:
