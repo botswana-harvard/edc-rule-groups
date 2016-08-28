@@ -7,7 +7,7 @@ from django.apps import apps as django_apps
 from django.db.models import IntegerField
 
 from edc_base.utils import convert_from_camel
-from edc_visit_tracking.models import VisitModelMixin
+from edc_visit_tracking.model_mixins import VisitModelMixin
 
 
 from .logic import Logic
