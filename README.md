@@ -111,3 +111,6 @@ If the logic is too complicated for a simple lambda, you can just pass a functio
         return False
 
     predicate = my_func
+
+ ... to be continued
+ 
