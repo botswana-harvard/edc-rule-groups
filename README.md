@@ -2,6 +2,20 @@
 
 Write custom rules that manipulate data managed by `edc-metadata`. 
 
+##Installation
+
+    pip install git+https://github.com/botswana-harvard/edc-rule-groups@develop#egg=edc_rule_groups
+    
+add to settings:
+    
+    INSTALLED_APPS = [
+    ...
+    'edc_rule_groups.apps.AppConfig',
+    ...
+    ]
+
+## Usage
+
 For a model that use the `edc_metadata` mixin, each instance, be it the instance "to be" or the existing instance, has a corresponding metadta record. `edc_rule_groups` act on those metadata records changing the `entry_status` to either "required" or "not required".
 
 In `edc_rule_groups` you declare a set of `Rules` contained in a `RuleGroup`. Each app has one 'rule_groups.py' that may have as many `RuleGroup` declarations as needed.
