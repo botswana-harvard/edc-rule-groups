@@ -1,6 +1,6 @@
 # edc-rule-groups
 
-Write custom rules that manipulate edc-meta-data. 
+Write custom rules that manipulate data managed by `edc-metadata`. 
 
 For a model that use the `edc_metadata` mixin, each instance, be it the instance "to be" or the existing instance, has a corresponding metadta record. `edc_rule_groups` act on those metadata records changing the `entry_status` to either "required" or "not required".
 
@@ -112,5 +112,11 @@ If the logic is too complicated for a simple lambda, you can just pass a functio
 
     predicate = my_func
 
- ... to be continued
- 
+
+### Rule Group Order
+
+RuleGroups are evaluated in the order they are registered and the rules within each rule group are evaluted in the order they are declared on the RuleGroup.
+
+### More examples
+
+See `edc_example` for working RuleGroups and how models are configured with the `edc_metadata` mixins.
