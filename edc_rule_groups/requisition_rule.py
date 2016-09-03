@@ -1,12 +1,12 @@
 from django.apps import apps as django_apps
 
 from edc_base.utils import convert_from_camel
-from edc_meta_data.helpers import RequisitionMetaDataHelper
+from edc_metadata.helpers import RequisitionMetaDataHelper
 
-from .base_rule import BaseRule
+from edc_rule_groups.rule import Rule
 
 
-class RequisitionRule(BaseRule):
+class RequisitionRule(Rule):
     """A RequisitionRule is instantiated as a class attribute of a rule group."""
 
     def __init__(self, *args, **kwargs):
@@ -16,16 +16,18 @@ class RequisitionRule(BaseRule):
             raise KeyError('{0} is missing required attribute \'target_requisition_panels\''.format(
                 self.__class__.__name__))
         self.entry_class = RequisitionMetaDataHelper
-        self.meta_data_model = django_apps.get_app_config('edc_meta_data').requisition_meta_data_model
+        self.meta_data_model = django_apps.get_app_config('edc_metadata').requisition_model
         self.target_requisition_panels = kwargs.get('target_requisition_panels')
 
     def run(self, visit_instance):
         """ Evaluate the rule for the requisition model for each requisition panel."""
+        app_config = django_apps.get_app_config('edc_registration')
         for target_model in self.target_model_list:  # is a requisition model(s)
             for self.target_requisition_panel in self.target_requisition_panels:
                 self.visit_instance = visit_instance
                 self.target_model = target_model
-                self.registered_subject = self.visit_instance.appointment.registered_subject
+                self.registered_subject = app_config.model.objects.get(
+                    subject_identifier=self.visit_instance.subject_identifier)
                 self.visit_attr_name = convert_from_camel(self.visit_instance._meta.object_name)
                 self._source_instance = None
                 self._target_instance = None
