@@ -14,6 +14,26 @@ add to settings:
     ...
     ]
 
+place a `rule_groups.py` in the app root with your rule groups.
+
+On bootup see the file was found and loaded:
+
+    Loading Edc Rule Groups ...
+     * checking for rule_groups ...
+     * registered rule groups from application 'edc_example'
+     Done loading Edc Rule Groups.
+
+Inspect rule groups from the site registry:
+
+    >>> from edc_rule_groups.site_rule_groups import site_rule_groups
+        
+    >>> for rule_groups in site_rule_groups.registry.values():
+    >>>    for rule_group in rule_groups:
+    >>>        print(rule_group._meta.rules)
+    
+    (<edc_example.rule_groups.ExampleRuleGroup: crfs_male>, <edc_example.rule_groups.ExampleRuleGroup: crfs_female>)
+    (<edc_example.rule_groups.ExampleRuleGroup2: bicycle>, <edc_example.rule_groups.ExampleRuleGroup2: car>)    
+    
 ## Usage
 
 For a model that use the `edc_metadata` mixin, each instance, be it the instance "to be" or the existing instance, has a corresponding metadta record. `edc_rule_groups` act on those metadata records changing the `entry_status` to either "required" or "not required".
