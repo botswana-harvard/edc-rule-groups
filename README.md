@@ -98,7 +98,7 @@ Let's say the rules changes and instead of refering to `gender` (male/female) yo
 
 and the second to read as:
 
-* "If `favorite_transport` is equal to `car` then set the metadata `entry_status` for `crf_one` and `crf_two` to REQUIRED, if not, set both to NOT_REQUIRED".
+* "If `favorite_transport` is equal to `car` then set the metadata `entry_status` for `crf_three` and `crf_four` to REQUIRED, if not, set both to NOT_REQUIRED".
 
 The field for car/bicycle, `favorite_transport` is on model `CrfTransport`. The RuleGroup might look like this: 
 
