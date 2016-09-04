@@ -47,13 +47,15 @@ The rule above has a logic attribute that evaluates like an if/else statement. I
 
 ### Rule Logic
 
-The `Logic` class has a `predicate` that when evaluated is passed a few model instances each of which is checked for the `gender` attribute. If found, the predicate is evaluated to True or False.
+The `Logic` class has a rule `predicate` that when evaluated is passed a few model instances each of which is checked for the `gender` attribute. If found, the predicate is evaluated to True or False.
 
 The data that is made available for the rule `predicate` by default is:
 * current visit model instance
 * registered subject (see `edc_registration`)
 
 For the rule above, `gender` would be automatically provided to the rule predicate during evaluation from registered subject.
+
+### Rule Groups
 
 Rules are declared as attributes of a RuleGroup much like fields in a `django` model:
 
@@ -77,13 +79,28 @@ Rules are declared as attributes of a RuleGroup much like fields in a `django` m
         class Meta:
             app_label = 'edc_example'
 
-If the value you need for the rule `predicate` is not on either of those instances, you can pass a `source_model`. With the `source_model` declared you would have these data available:
+Rule group class declarations are placed in file `rule_groups.py` in the root of your application. They are registered in the order in which they appear in the file. All rule groups are available from the `site_rule_groups` global.
+
+### More on Rule Logic and Rule Predicates
+
+#### Rule Predicate values
+
+In the examples above, the rule `predicate` can only access values that can be found on the subjects's current `visit` instance or `registered_subject` instance. If the value you need for the rule `predicate` is not on either of those instances, you can pass a `source_model`. With the `source_model` declared you would have these data available:
+
 * current visit model instance
 * registered subject (see `edc_registration`)
 * source model instance for the current visit
 * queryset of source model for the current subject_identifier (more on this one later)
 
-Let's say the rules changes and instead of male/female you have car/bicycle. The field for car/bicycle, `favorite_transport` is on model `CrfTransport`. The RuleGroup might look like this: 
+Let's say the rules changes and instead of refering to `gender` (male/female) you wish to refer to the value field of `favorite_transport` on model `CrfTransport`. `favorite_transport` can be "car" or "bicycle". You want the first rule `predicate` to read as:
+
+* "If `favorite_transport` is equal to `bicycle` then set the metadata `entry_status` for `crf_one` and `crf_two` to REQUIRED, if not, set both to NOT_REQUIRED" 
+
+and the second to read as:
+
+* "If `favorite_transport` is equal to `car` then set the metadata `entry_status` for `crf_one` and `crf_two` to REQUIRED, if not, set both to NOT_REQUIRED".
+
+The field for car/bicycle, `favorite_transport` is on model `CrfTransport`. The RuleGroup might look like this: 
 
     @register()
     class ExampleRuleGroup(RuleGroup):
@@ -106,18 +123,23 @@ Let's say the rules changes and instead of male/female you have car/bicycle. The
             app_label = 'edc_example'
             source_model = 'CrfTransport'
 
-#### Rule Predicates
-There are two provided classes for the `predicate`, `P` and `PF`. With `P` you can make rule predicates like those above. All standard opertors can be used. For example:
+Note that `CrfTransport` is a `crf` model in the Edc. That is, it has a `foreign key` to the visit model. Internally the query will be constructed like this:
+    
+    CrfTansport.objects.get(visit__subject_identifier=subject_identifier)  # where "visit" is the name of the visit model attr 
+
+#### More Complex Rule Predicates
+
+There are two provided classes for the rule `predicate`, `P` and `PF`. With `P` you can make simple rule predicates like those above. All standard opertors can be used. For example:
 
     predicate = P('gender', 'eq', 'MALE')
     predicate = P('referral_datetime', 'is not', None)
     predicate = P('age', '<=', 64)
 
-If the logic is a bit more complicated, the `PF` class allows you to pass a `lambda` function directly:
+If the logic needs to a bit more complicated, the `PF` class allows you to pass a `lambda` function directly:
 
     predicate = PF('age', lambda x: True if x >= 18 and x <= 64 else False)
     
-If the logic is too complicated for a simple lambda, you can just pass a function. When writing your function just remember that the `predicate` must always evaluate to True or False. 
+If the logic needs to be more complicated than is recommended for a simple lambda, you can just pass a function. When writing your function just remember that the rule `predicate` must always evaluate to True or False. 
 
     def my_func(visit, registered_subject, source_obj, source_qs):
         if source_obj.married and registered_subject.gender == FEMALE:
