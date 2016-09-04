@@ -83,6 +83,19 @@ Rule group class declarations are placed in file `rule_groups.py` in the root of
 
 ### More on Rule Logic and Rule Predicates
 
+#### Logic
+
+The `consequence` and `alternative` except these values:
+    
+    from edc_metadata.constants import REQUIRED, NOT_REQUIRED
+    from edc_rule_groups.constants import DO_NOTHING
+
+    * REQUIRED
+    * NOT_REQUIRED
+    * DO_NOTHING 
+
+It is recommended to write the logic so that if the `predicate` evaluated to  `True`, the `consequence` is REQUIRED.
+
 #### Rule Predicate values
 
 In the examples above, the rule `predicate` can only access values that can be found on the subjects's current `visit` instance or `registered_subject` instance. If the value you need for the rule `predicate` is not on either of those instances, you can pass a `source_model`. With the `source_model` declared you would have these data available:
@@ -125,11 +138,18 @@ The field for car/bicycle, `favorite_transport` is on model `CrfTransport`. The 
 
 Note that `CrfTransport` is a `crf` model in the Edc. That is, it has a `foreign key` to the visit model. Internally the query will be constructed like this:
     
-    CrfTansport.objects.get(visit__subject_identifier=subject_identifier)  # where "visit" is the name of the visit model attr 
+    # source model instance for the current visit 
+    visit_attr = 'subject_visit'
+    source_obj = CrfTansport.objects.get(**{visit_attr: visit}) 
+    
+    # queryset of source model for the current subject_identifier
+    visit_attr = 'subject_visit'
+    source_qs = CrfTansport.objects.filter(**{'{}__subject_identifier'.format(visit_attr): subject_identifier}) 
+    
 
 #### More Complex Rule Predicates
 
-There are two provided classes for the rule `predicate`, `P` and `PF`. With `P` you can make simple rule predicates like those above. All standard opertors can be used. For example:
+There are two provided classes for the rule `predicate`, `P` and `PF`. With `P` you can make simple rule predicates like those used in the examples above. All standard opertors can be used. For example:
 
     predicate = P('gender', 'eq', 'MALE')
     predicate = P('referral_datetime', 'is not', None)
@@ -153,6 +173,11 @@ If the logic needs to be more complicated than is recommended for a simple lambd
 
 RuleGroups are evaluated in the order they are registered and the rules within each rule group are evaluted in the order they are declared on the RuleGroup.
 
+
+### Testing
+
+Since the order in which rules run matters, it is essential to test the rules together. See `tests` for some examples.
+
 ### More examples
 
-See `edc_example` for working RuleGroups and how models are configured with the `edc_metadata` mixins.
+See `edc_example` for working RuleGroups and how models are configured with the `edc_metadata` mixins. The `tests` in `edc_rule_groups` use the rule group and model classes in `edc_example`. 
