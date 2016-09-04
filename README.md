@@ -36,7 +36,7 @@ Inspect rule groups from the site registry:
     
 ## Usage
 
-For a model that use the `edc_metadata` mixin, each instance, be it the instance "to be" or the existing instance, has a corresponding metadta record. `edc_rule_groups` act on those metadata records changing the `entry_status` to either "required" or "not required".
+For a model that uses the `edc_metadata` mixin, each instance, be it the instance "to be" or the existing instance, has a corresponding metadata record. `edc_rule_groups` act on those metadata records changing the `entry_status` to either "required" or "not required".
 
 In `edc_rule_groups` you declare a set of `Rules` contained in a `RuleGroup`. Each app has one 'rule_groups.py' that may have as many `RuleGroup` declarations as needed.
 
