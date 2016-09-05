@@ -41,7 +41,7 @@ class Rule:
             target_model = django_apps.get_model(*target_model.split('.'))
             if self.runif:
                 if self.source_model and not source_obj:
-                    pass
+                    pass  # without source_obj, predicate will fail
                 else:
                     try:
                         target_model.objects.get_for_visit(visit)

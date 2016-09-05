@@ -166,6 +166,7 @@ Note that `CrfTransport` is a `crf` model in the Edc. That is, it has a `foreign
     visit_attr = 'subject_visit'
     source_qs = CrfTansport.objects.filter(**{'{}__subject_identifier'.format(visit_attr): subject_identifier}) 
     
+'''Important''': If the source model instance does not exist, the rules in the rule group will not run
 
 #### More Complex Rule Predicates
 
