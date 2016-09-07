@@ -5,8 +5,6 @@ from collections import OrderedDict
 from django.apps import apps as django_apps
 from django.utils.module_loading import import_module, module_has_submodule
 
-from .rule_group import RuleGroup
-
 
 class AlreadyRegistered(Exception):
     pass
@@ -39,7 +37,6 @@ class SiteRuleGroups(object):
     def get_rule_group(self, name):
         app_label, _ = name.split('.')
         for rule_group in self.registry.get(app_label):
-            print(rule_group.name)
             if rule_group.name == name:
                 return rule_group
         return None

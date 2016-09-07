@@ -107,7 +107,7 @@ class RuleGroupTests(TestCase):
 
     def test_register_twice_raises(self):
 
-        class ExampleRuleGroup(RuleGroup):
+        class ExampleCrfRuleGroup(RuleGroup):
 
             crfs_male = CrfRule(
                 logic=Logic(
@@ -126,7 +126,7 @@ class RuleGroupTests(TestCase):
             class Meta:
                 app_label = 'edc_example'
 
-        self.assertRaises(AlreadyRegistered, site_rule_groups.register, ExampleRuleGroup)
+        self.assertRaises(AlreadyRegistered, site_rule_groups.register, ExampleCrfRuleGroup)
 
     def test_example2(self):
         """Asserts CrfTwo is REQUIRED if f1==\'car\' as specified

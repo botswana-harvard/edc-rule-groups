@@ -61,18 +61,8 @@ class RuleGroupMeta(type):
         try:
             if not meta.source_fk:
                 meta.source_fk = None
-                source_fk_model = None
-                source_fk_attr = None
-            else:
-                source_fk_model, source_fk_attr = meta.source_fk
-                try:
-                    source_fk_model.split('.')
-                except AttributeError:
-                    source_fk_model = '{}.{}'.format(meta.app_label, source_fk_model)
         except AttributeError:
             meta.source_fk = None
-            source_fk_model = None
-            source_fk_attr = None
 
         # update attrs in each rule from values in Meta
         rules = []
@@ -85,14 +75,19 @@ class RuleGroupMeta(type):
                     if meta:
                         rule.app_label = meta.app_label
                         target_models = []
-                        for target_model in rule.target_models:
-                            if len(target_model.split('.')) != 2:
-                                target_model = '{}.{}'.format(meta.app_label, target_model)
-                            target_models.append(target_model)
-                        rule.target_models = target_models
+                        try:
+                            for target_model in rule.target_models:
+                                if len(target_model.split('.')) != 2:
+                                    target_model = '{}.{}'.format(meta.app_label, target_model)
+                                target_models.append(target_model)
+                            rule.target_models = target_models
+                        except AttributeError as e:
+                            if 'target_models' not in str(e):
+                                raise AttributeError(e)
+                            if len(rule.target_model.split('.')) != 2:
+                                rule.target_model = '{}.{}'.format(meta.app_label, rule.target_model)
+                            rule.target_models = [rule.target_model]
                         rule.source_model = source_model
-                        rule.source_fk_model = source_fk_model
-                        rule.source_fk_attr = source_fk_attr
                         rules.append(rule)
         # add a django like _meta to Rulegroup as an instance of BaseMeta
         meta_attrs = {k: getattr(meta, k) for k in meta.__dict__ if not k.startswith('_')}

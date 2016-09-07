@@ -5,7 +5,7 @@ from .constants import DO_NOTHING
 
 class Rule:
 
-    def __init__(self, logic, target_models, name=None):
+    def __init__(self, logic):
 
         self.source_model = None  # set by metaclass
         # self.source_fk_model = None  # set by metaclass
@@ -14,7 +14,6 @@ class Rule:
         self.group = None  # set by metaclass
         self.app_label = None  # set by metaclass
         self.logic = logic
-        self.target_models = target_models
 
     def __repr__(self):
         return '<{}.rule_groups.{}: {}>'.format(self.app_label, self.group, self.name)
@@ -43,22 +42,25 @@ class Rule:
                 if self.source_model and not source_obj:
                     pass  # without source_obj, predicate will fail
                 else:
-                    try:
-                        target_model.objects.get_for_visit(visit)
-                    except target_model.DoesNotExist:
-                        entry_status = self.evaluate(visit, registered_subject, source_obj, source_qs)
-                        visit.metadata_update_for_model(
-                            target_model._meta.label_lower,
-                            entry_status=entry_status)
+                    self.run_rules(target_model, visit, registered_subject, source_obj, source_qs)
+
+    def run_rules(self, target_model, visit, *args):
+        try:
+            target_model.objects.get_for_visit(visit)
+        except target_model.DoesNotExist:
+            entry_status = self.evaluate(visit, *args)
+            visit.metadata_update_for_model(
+                target_model._meta.label_lower,
+                entry_status=entry_status)
 
     @property
     def runif(self):
         """May be overridden to run only on a condition."""
         return True
 
-    def evaluate(self, visit, registered_subject, source_obj, source_qs):
+    def evaluate(self, visit, *args):
         """ Evaluates the predicate function and returns a result."""
-        if self.logic.predicate(visit, registered_subject, source_obj, source_qs):
+        if self.logic.predicate(visit, *args):
             result = self.logic.consequence if self.logic.consequence != DO_NOTHING else None
         else:
             result = self.logic.alternative if self.logic.alternative != DO_NOTHING else None
