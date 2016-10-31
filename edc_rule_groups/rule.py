@@ -32,6 +32,8 @@ class Rule:
                 source_obj = source_model.objects.get_for_visit(visit)
             except source_model.DoesNotExist:
                 source_obj = None
+            except AttributeError:
+                pass
             source_qs = source_model.objects.get_for_subject_identifier(visit.subject_identifier)
         else:
             source_obj = None
@@ -49,9 +51,12 @@ class Rule:
             target_model.objects.get_for_visit(visit)
         except target_model.DoesNotExist:
             entry_status = self.evaluate(visit, *args)
-            visit.metadata_update_for_model(
-                target_model._meta.label_lower,
-                entry_status=entry_status)
+            try:
+                visit.metadata_update_for_model(
+                    target_model._meta.label_lower,
+                    entry_status=entry_status)
+            except:
+                pass
 
     @property
     def runif(self):
