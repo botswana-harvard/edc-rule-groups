@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+
 from edc_rule_groups.rule import Rule
 
 
@@ -15,7 +17,10 @@ class RequisitionRule(Rule):
                 target_model.objects.get_for_visit(visit, panel_name=panel.name)
             except target_model.DoesNotExist:
                 entry_status = self.evaluate(visit, *args)
-                visit.metadata_update_for_model(
-                    target_model._meta.label_lower,
-                    entry_status=entry_status,
-                    panel_name=panel.name)
+                try:
+                    visit.metadata_update_for_model(
+                        target_model._meta.label_lower,
+                        entry_status=entry_status,
+                        panel_name=panel.name)
+                except ObjectDoesNotExist:
+                    pass
