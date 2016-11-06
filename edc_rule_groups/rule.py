@@ -1,6 +1,7 @@
 from django.apps import apps as django_apps
 
 from .constants import DO_NOTHING
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class Rule:
@@ -55,7 +56,7 @@ class Rule:
                 visit.metadata_update_for_model(
                     target_model._meta.label_lower,
                     entry_status=entry_status)
-            except:
+            except ObjectDoesNotExist:
                 pass
 
     @property
