@@ -3,7 +3,7 @@ from django.test import TestCase
 
 from edc_constants.constants import MALE, FEMALE
 from edc_example.factories import (
-    SubjectConsentFactory, SubjectVisitFactory, SubjectRequisitionFactory, EnrollmentFactory)
+    SubjectConsentFactory, SubjectVisitFactory, EnrollmentFactory)
 from edc_example.models import CrfMetadata, Appointment, CrfOne, CrfTwo, CrfThree, CrfFive, CrfFour, Enrollment
 from edc_metadata.constants import NOT_REQUIRED, REQUIRED, KEYED
 from edc_rule_groups.crf_rule import CrfRule
