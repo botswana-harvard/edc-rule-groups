@@ -13,6 +13,8 @@ from edc_rule_groups.predicate import P
 from edc_rule_groups.rule_group import RuleGroup
 from edc_rule_groups.site_rule_groups import site_rule_groups, AlreadyRegistered
 from edc_visit_schedule.site_visit_schedules import site_visit_schedules
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 edc_registration_app_config = django_apps.get_app_config('edc_registration')
 
@@ -43,7 +45,9 @@ class RuleGroupTests(TestCase):
 
     def test_example_rules_run_if_male(self):
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -75,7 +79,9 @@ class RuleGroupTests(TestCase):
 
     def test_example_rules_run_if_female(self):
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=FEMALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -132,7 +138,9 @@ class RuleGroupTests(TestCase):
         """Asserts CrfTwo is REQUIRED if f1==\'car\' as specified
         by edc_example.rule_groups.ExampleRuleGroup2."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -147,7 +155,9 @@ class RuleGroupTests(TestCase):
         """Asserts CrfThree is REQUIRED if f1==\'bicycle\' as specified
         by edc_example.rule_groups.ExampleRuleGroup2."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -162,7 +172,9 @@ class RuleGroupTests(TestCase):
         """Asserts CrfThree is REQUIRED if f1==\'bicycle\' but then not when f1 is changed to \'car\' as specified
         by edc_example.rule_groups.ExampleRuleGroup2."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -191,11 +203,15 @@ class RuleGroupTests(TestCase):
         """Asserts same as above for edc_example.rule_groups.ExampleRuleGroup2 but add
         a second visit and CrfOne."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
-        subject_visit1 = SubjectVisitFactory(appointment=appointment)
+        subject_visit1 = SubjectVisitFactory(
+            appointment=appointment,
+            report_datetime=timezone.now() - relativedelta(days=5))
         self.assertEqual(CrfMetadata.objects.get(model=CrfTwo._meta.label_lower).entry_status, NOT_REQUIRED)
         self.assertEqual(CrfMetadata.objects.get(model=CrfThree._meta.label_lower).entry_status, NOT_REQUIRED)
         CrfOne.objects.create(subject_visit=subject_visit1, f1='bicycle')
@@ -205,7 +221,8 @@ class RuleGroupTests(TestCase):
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=next_visit.code)
-        subject_visit2 = SubjectVisitFactory(appointment=appointment)
+        subject_visit2 = SubjectVisitFactory(
+            appointment=appointment)
         CrfOne.objects.create(subject_visit=subject_visit2, f1='car')
         self.assertEqual(
             CrfMetadata.objects.get(
@@ -235,7 +252,9 @@ class RuleGroupTests(TestCase):
     def test_example6(self):
         """Asserts resaving subject visit does not overwrite."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -252,7 +271,9 @@ class RuleGroupTests(TestCase):
     def test_example7(self):
         """Asserts if instance exists, rule is ignored."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
@@ -277,7 +298,9 @@ class RuleGroupTests(TestCase):
     def test_delete(self):
         """Asserts delete returns to default entry status."""
         subject_consent = SubjectConsentFactory(subject_identifier='123456789-0', gender=MALE)
-        enrollment = EnrollmentFactory(subject_identifier=subject_consent.subject_identifier)
+        enrollment = EnrollmentFactory(
+            subject_identifier=subject_consent.subject_identifier,
+            schedule_name='schedule1')
         appointment = Appointment.objects.get(
             subject_identifier=enrollment.subject_identifier,
             visit_code=self.first_visit.code)
