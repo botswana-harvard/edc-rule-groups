@@ -1,6 +1,10 @@
+from dateutil.relativedelta import relativedelta
+
+from django.utils import timezone
 from django.apps import apps as django_apps
 from django.test import TestCase
 
+from edc_base.utils import get_utcnow
 from edc_constants.constants import MALE, FEMALE
 from edc_example.factories import (
     SubjectConsentFactory, SubjectVisitFactory, EnrollmentFactory)
@@ -13,8 +17,6 @@ from edc_rule_groups.predicate import P
 from edc_rule_groups.rule_group import RuleGroup
 from edc_rule_groups.site_rule_groups import site_rule_groups, AlreadyRegistered
 from edc_visit_schedule.site_visit_schedules import site_visit_schedules
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
 edc_registration_app_config = django_apps.get_app_config('edc_registration')
 
@@ -211,7 +213,7 @@ class RuleGroupTests(TestCase):
             visit_code=self.first_visit.code)
         subject_visit1 = SubjectVisitFactory(
             appointment=appointment,
-            report_datetime=timezone.now() - relativedelta(days=5))
+            report_datetime=get_utcnow() - relativedelta(days=5))
         self.assertEqual(CrfMetadata.objects.get(model=CrfTwo._meta.label_lower).entry_status, NOT_REQUIRED)
         self.assertEqual(CrfMetadata.objects.get(model=CrfThree._meta.label_lower).entry_status, NOT_REQUIRED)
         CrfOne.objects.create(subject_visit=subject_visit1, f1='bicycle')
