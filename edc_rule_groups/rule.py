@@ -1,7 +1,7 @@
 from django.apps import apps as django_apps
 
 from .constants import DO_NOTHING
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, FieldError
 
 
 class Rule:
@@ -35,7 +35,10 @@ class Rule:
                 source_obj = None
             except AttributeError:
                 pass
-            source_qs = source_model.objects.get_for_subject_identifier(visit.subject_identifier)
+            try:
+                source_qs = source_model.objects.filter(subject_identifier=visit.subject_identifier)
+            except FieldError:
+                source_qs = source_model.objects.get_for_subject_identifier(visit.subject_identifier)
         else:
             source_obj = None
             source_qs = None
