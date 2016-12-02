@@ -27,6 +27,8 @@ class Rule:
             registered_subject = app_config.model.objects.get(subject_identifier=visit.subject_identifier)
         except app_config.model.DoesNotExist:
             registered_subject = None
+        source_obj = None
+        source_qs = None
         if self.source_model:
             source_model = django_apps.get_model(*self.source_model)
             try:
@@ -39,9 +41,6 @@ class Rule:
                 source_qs = source_model.objects.filter(subject_identifier=visit.subject_identifier)
             except FieldError:
                 source_qs = source_model.objects.get_for_subject_identifier(visit.subject_identifier)
-        else:
-            source_obj = None
-            source_qs = None
         for target_model in self.target_models:
             target_model = django_apps.get_model(*target_model.split('.'))
             if self.runif:
