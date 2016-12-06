@@ -50,7 +50,6 @@ class Rule:
                 if self.source_model and not source_obj:
                     pass  # without source_obj, predicate will fail
                 else:
-                    print(target_model, visit, registered_subject, source_obj, source_qs)
                     self.run_rules(target_model, visit, registered_subject, source_obj, source_qs)
 
     def run_rules(self, target_model, visit, *args):
