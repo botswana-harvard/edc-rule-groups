@@ -1,6 +1,7 @@
 import inspect
 import copy
 
+from .exceptions import RuleGroupError
 from .rule import Rule
 
 
@@ -104,9 +105,19 @@ class RuleGroup(object, metaclass=RuleGroupMeta):
     def run_for_source_model(cls, obj, source_model):
         for rule in cls._meta.rules:
             if rule.source_model == source_model:
-                rule.run(obj)
+                try:
+                    rule.run(obj)
+                except AttributeError as e:
+                    raise RuleGroupError(
+                        'An exception was raised for rule {} with object \'{}\'. Got {}'.format(
+                            rule, obj._meta.label_lower, str(e)))
 
     @classmethod
     def run_all(cls, obj):
         for rule in cls._meta.rules:
-            rule.run(obj)
+            try:
+                rule.run(obj)
+            except AttributeError as e:
+                raise RuleGroupError(
+                    'An exception was raised for rule {} with object \'{}\'. Got {}'.format(
+                        rule, obj._meta.label_lower, str(e)))

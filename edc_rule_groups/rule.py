@@ -2,6 +2,7 @@ from django.apps import apps as django_apps
 
 from .constants import DO_NOTHING
 from django.core.exceptions import ObjectDoesNotExist, FieldError
+from edc_rule_groups.exceptions import RuleError
 
 
 class Rule:
@@ -35,8 +36,10 @@ class Rule:
                 source_obj = source_model.objects.get_for_visit(visit)
             except source_model.DoesNotExist:
                 source_obj = None
-            except AttributeError:
-                pass
+            except AttributeError as e:
+                if 'get_for_visit' not in str(e):
+                    raise RuleError('{} See \'{}\'.'.format(str(e), source_model._meta.label_lower))
+                source_obj = visit
             try:
                 source_qs = source_model.objects.filter(subject_identifier=visit.subject_identifier)
             except FieldError:
@@ -47,9 +50,13 @@ class Rule:
                 if self.source_model and not source_obj:
                     pass  # without source_obj, predicate will fail
                 else:
+                    print(target_model, visit, registered_subject, source_obj, source_qs)
                     self.run_rules(target_model, visit, registered_subject, source_obj, source_qs)
 
     def run_rules(self, target_model, visit, *args):
+        if target_model._meta.label_lower == visit._meta.label_lower:
+            raise RuleError('Target model and visit model are the same. Got {}=={}'.format(
+                target_model._meta.label_lower, visit._meta.label_lower))
         try:
             target_model.objects.get_for_visit(visit)
         except target_model.DoesNotExist:
@@ -60,6 +67,13 @@ class Rule:
                     entry_status=entry_status)
             except ObjectDoesNotExist:
                 pass
+        except AttributeError as e:
+            if 'get_for_visit' in str(e):
+                raise RuleError('An exception was raised for target model \'{}\'. Got {}'.format(
+                    target_model._meta.label_lower,
+                    str(e)))
+            else:
+                raise RuleError(str(e))
 
     @property
     def runif(self):
@@ -68,10 +82,13 @@ class Rule:
 
     def evaluate(self, visit, *args):
         """ Evaluates the predicate function and returns a result."""
-        if self.logic.predicate(visit, *args):
-            result = self.logic.consequence if self.logic.consequence != DO_NOTHING else None
-        else:
-            result = self.logic.alternative if self.logic.alternative != DO_NOTHING else None
+        try:
+            if self.logic.predicate(visit, *args):
+                result = self.logic.consequence if self.logic.consequence != DO_NOTHING else None
+            else:
+                result = self.logic.alternative if self.logic.alternative != DO_NOTHING else None
+        except Exception as e:
+            raise RuleError('An exception was raised when running rule {}. Got {}'.format(self, str(e)))
         return result
 
     @property
