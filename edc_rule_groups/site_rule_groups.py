@@ -107,13 +107,14 @@ class SiteRuleGroups(object):
                 try:
                     before_import_registry = copy.copy(site_rule_groups.registry)
                     import_module('{}.{}'.format(app, module_name))
-                    sys.stdout.write(' * registered rule groups from application \'{}\'\n'.format(app))
                 except Exception as e:
                     if 'No module named \'{}.{}\''.format(app, module_name) not in str(e):
                         site_rule_groups.registry = before_import_registry
                         if module_has_submodule(mod, module_name):
                             raise
-            except ImportError:
+                else:
+                    sys.stdout.write(' * registered rule groups from application \'{}\'\n'.format(app))
+            except ImportError as e:
                 pass
 
 site_rule_groups = SiteRuleGroups()
