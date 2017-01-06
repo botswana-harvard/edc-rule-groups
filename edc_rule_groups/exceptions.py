@@ -6,3 +6,7 @@ class RuleError(Exception):
 
 class RuleGroupError(Exception):
     pass
+
+
+class RuleFunctionError(Exception):
+    pass
