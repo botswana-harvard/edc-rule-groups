@@ -5,20 +5,20 @@ class PredicateError(Exception):
 
 class Base:
 
-    def get_value(self, *args):
+    def get_value(self, *args, attr=None):
         """Returns a value by checking for the attr on each arg.
 
         Each arg in args may be a model instance, queryset, or None."""
         value = None
         for arg in args:
             try:
-                value = getattr(arg, self.attr)
+                value = getattr(arg, attr)
                 if value:
                     break
             except AttributeError:
                 try:
                     for obj in arg:
-                        value = getattr(obj, self.attr)
+                        value = getattr(obj, attr)
                         if value:
                             break
                 except (AttributeError, TypeError):
@@ -67,7 +67,7 @@ class P(Base):
             self.__class__.__name__, self.attr, self.operator, self.expected_value)
 
     def __call__(self, *args):
-        value = self.get_value(*args)
+        value = self.get_value(*args, attr=self.attr)
         return self.func(value, self.expected_value)
 
 
@@ -92,13 +92,16 @@ class PF(Base):
                     ...
 
     """
-    def __init__(self, attr, func):
-        self.attr = attr
+    def __init__(self, *attrs, func=None):
+        self.attrs = attrs
         self.func = func
 
     def __call__(self, *args):
-        value = self.get_value(*args)
-        return self.func(value)
+        values = []
+        for attr in self.attrs:
+            print(attr)
+            values.append(self.get_value(*args, attr=attr))
+        return self.func(*values)
 
     def __repr__(self):
         return '<{}({}, {})>'.format(self.__class__.__name__, self.attr, self.func)

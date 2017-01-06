@@ -178,7 +178,9 @@ There are two provided classes for the rule `predicate`, `P` and `PF`. With `P` 
 
 If the logic needs to a bit more complicated, the `PF` class allows you to pass a `lambda` function directly:
 
-    predicate = PF('age', lambda x: True if x >= 18 and x <= 64 else False)
+    predicate = PF('age', func=lambda x: True if x >= 18 and x <= 64 else False)
+
+    predicate = PF('age', 'gender', func=lambda x, y: True if x >= 18 and x <= 64 and y == MALE else False)
     
 If the logic needs to be more complicated than is recommended for a simple lambda, you can just pass a function. When writing your function just remember that the rule `predicate` must always evaluate to True or False. 
 

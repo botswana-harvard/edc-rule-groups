@@ -9,17 +9,16 @@ from edc_constants.constants import MALE, FEMALE
 from edc_example.factories import (
     SubjectConsentFactory, SubjectVisitFactory, EnrollmentFactory)
 from edc_example.models import (
-    Appointment, CrfOne, CrfTwo, CrfThree, CrfFive, CrfFour, Enrollment, SubjectVisit)
+    Appointment, CrfOne, CrfTwo, CrfThree, CrfFive, CrfFour, Enrollment)
 from edc_metadata.constants import NOT_REQUIRED, REQUIRED, KEYED
 from edc_metadata.models import CrfMetadata
 from edc_rule_groups.crf_rule import CrfRule
 from edc_rule_groups.exceptions import RuleError
 from edc_rule_groups.logic import Logic
-from edc_rule_groups.predicate import P
+from edc_rule_groups.predicate import P, PF
 from edc_rule_groups.rule_group import RuleGroup
 from edc_rule_groups.site_rule_groups import site_rule_groups, AlreadyRegistered
 from edc_visit_schedule.site_visit_schedules import site_visit_schedules
-from edc_registration.models import RegisteredSubject
 
 edc_registration_app_config = django_apps.get_app_config('edc_registration')
 
@@ -47,7 +46,6 @@ class RuleGroupTests(TestCase):
             predicate=lambda x: False if x else True,
             consequence='OLD',
             alternative=NOT_REQUIRED)
-
 
     @tag('me')
     def test_example_rules_run_if_male(self):
