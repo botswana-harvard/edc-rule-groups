@@ -99,7 +99,6 @@ class PF(Base):
     def __call__(self, *args):
         values = []
         for attr in self.attrs:
-            print(attr)
             values.append(self.get_value(*args, attr=attr))
         return self.func(*values)
 
