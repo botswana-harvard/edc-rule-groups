@@ -10,3 +10,7 @@ class RuleGroupError(Exception):
 
 class RuleFunctionError(Exception):
     pass
+
+
+class RequisitionRuleGroupErrror(Exception):
+    pass
