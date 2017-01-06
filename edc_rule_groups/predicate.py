@@ -3,7 +3,30 @@ class PredicateError(Exception):
     pass
 
 
-class P:
+class Base:
+
+    def get_value(self, *args):
+        """Returns a value by checking for the attr on each arg.
+
+        Each arg in args may be a model instance, queryset, or None."""
+        value = None
+        for arg in args:
+            try:
+                value = getattr(arg, self.attr)
+                if value:
+                    break
+            except AttributeError:
+                try:
+                    for obj in arg:
+                        value = getattr(obj, self.attr)
+                        if value:
+                            break
+                except (AttributeError, TypeError):
+                    pass
+        return value
+
+
+class P(Base):
 
     """
     Simple predicate class.
@@ -40,34 +63,15 @@ class P:
         self.func = self.funcs.get(self.operator)
 
     def __repr__(self):
-        return '<{}({}, {}, {})>'.format(self.__class__.__name__, self.attr, self.operator, self.expected_value)
+        return '<{}({}, {}, {})>'.format(
+            self.__class__.__name__, self.attr, self.operator, self.expected_value)
 
     def __call__(self, *args):
         value = self.get_value(*args)
         return self.func(value, self.expected_value)
 
-    def get_value(self, *args):
-        """Returns a value by checking for the attr on each arg.
 
-        Each arg in args may be a model instance, queryset, or None."""
-        value = None
-        for arg in args:
-            try:
-                value = getattr(arg, self.attr)
-                if value:
-                    break
-            except AttributeError:
-                try:
-                    for obj in arg:
-                        value = getattr(obj, self.attr)
-                        if value:
-                            break
-                except (AttributeError, TypeError):
-                    pass
-        return value
-
-
-class PF(P):
+class PF(Base):
     """
         Predicate with a lambda function.
 
@@ -91,3 +95,10 @@ class PF(P):
     def __init__(self, attr, func):
         self.attr = attr
         self.func = func
+
+    def __call__(self, *args):
+        value = self.get_value(*args)
+        return self.func(value)
+
+    def __repr__(self):
+        return '<{}({}, {})>'.format(self.__class__.__name__, self.attr, self.func)
