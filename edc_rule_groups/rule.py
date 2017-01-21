@@ -46,7 +46,8 @@ class Rule:
                 source_qs = source_model.objects.get_for_subject_identifier(visit.subject_identifier)
         for target_model in self.target_models:
             target_model = django_apps.get_model(*target_model.split('.'))
-            if self.runif:
+            print("test runif condition..", self.runif(visit))
+            if self.runif(visit):
                 if self.source_model and not source_obj:
                     pass  # without source_obj, predicate will fail
                 else:
@@ -74,8 +75,7 @@ class Rule:
             else:
                 raise RuleError(str(e))
 
-    @property
-    def runif(self):
+    def runif(self, visit, **kwargs):
         """May be overridden to run only on a condition."""
         return True
 
